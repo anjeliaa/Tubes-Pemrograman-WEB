@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | Jejak Bencoolen</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body class="auth-body">
+
+        <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <span class="logo-text">Jejak <strong>Bencoolen</strong></span>
+            </a>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link active">Home</a></li>
+                <li><a href="destination.html" class="nav-link">Destination</a></li>
+                <li><a href="Blogs.html" class="nav-link">Blogs</a></li>
+                <li><a href="About.html" class="nav-link">About</a></li>
+            </ul>
+            
+            <div class="nav-auth">
+                <a href="login.html" class="btn-login">Login</a>
+                <a href="register.html" class="btn-register">Sign Up</a>
+            </div>
+            
+            <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+    
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2>Welcome Back</h2>
+            <p>Login to continue your journey</p>
+            <form id="loginForm">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+            <p class="auth-switch">
+                Don't have an account? 
+                <a href="register.html">Sign Up</a>
+            </p>
+        </div>
+    </div>
+
+<script src="auth.js"></script>
+</body>
+</html>

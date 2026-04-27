@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="..\style.css">
+</head>
+
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="dashboard.html" class="nav-logo">
+                <span class="logo-text">Jejak <strong>Bencoolen</strong></span>
+            </a>
+            
+            <ul class="nav-menu">
+                <li><a href="dashboard.html" class="nav-link">Home</a></li>
+                <li><a href="explore.html" class="nav-link">Explore</a></li>
+                <li><a href="favorites.html" class="nav-link">Favorites</a></li>
+            </ul>
+            
+            <div class="nav-user" id="navUser">
+                <img id="navAvatar" src="img/default-avatar.png" alt="User Avatar">
+                <i class="fa-solid fa-chevron-down"></i>
+                <div class="nav-dropdown">
+                    <a href="profile.html">
+                        <i class="fa-regular fa-user"></i> Profile
+                    </a>
+                    <button id="logoutBtn">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <header class="dest-hero" id="destHero">
+        <div class="container">
+            <h1 id="heroTitle">Explore Destinations</h1>
+            <p id="heroDesc">
+                Find the best places to visit in Bengkulu, from beaches to mountains and historical sites.
+            </p>
+        </div>
+    </header>
+    
+    <!--FILTER BAR -->
+    <section class="dest-filter">
+        <div class="container">
+            <div class="filter-top">
+                <div class="search-box">
+                    <i class="fa fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search destinations..." />
+                    <button id="searchClear">✕</button>
+                </div>
+                
+                <select id="locationFilter">
+                    <option value="semua">All Locations</option>
+                    <option value="Kota Bengkulu">Bengkulu City</option>
+                    <option value="Kabupaten Rejang Lebong">Rejang Lebong</option>
+                    <option value="Kabupaten Lebong">Lebong</option>
+                    <option value="Pulau Enggano, Bengkulu Utara">Enggano Island</option>
+                </select>
+                <button id="btnReset">Reset</button>
+            </div>
+            
+            <div class="filter-pills">
+                <button class="pill active" data-filter="semua">All</button>
+                <button class="pill" data-filter="pantai">Beaches</button>
+                <button class="pill" data-filter="alam">Nature</button>
+                <button class="pill" data-filter="sejarah">History</button>
+            </div>
+            
+            <div id="resultInfo" class="result-info"></div>
+        </div>
+    </section>
+    
+    <!--GRID -->
+    <main class="dest-grid-section">
+        <div class="container">
+            <div id="wisataGrid" class="wisata-grid"></div>
+            <div id="emptyState" class="empty-state">No destinations found.</div>
+        </div>
+    </main>
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button id="modalClose" class="modal-close">×</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+    
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h2>Jejak Bencoolen</h2>
+                    <p>
+                        Discover Bengkulu through curated destinations, inspiring travel stories, and authentic local experiences.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Explore</h4>
+                    <a href="dashboard.html">Home</a>
+                    <a href="explore.html">Explore</a>
+                    <a href="favorites.html">Favorites</a>
+                    <a href="profile.html">Profile</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <a href="#">Help Center</a>
+                    <a href="#">Travel Guide</a>
+                    <a href="#">Terms & Privacy</a>
+                </div>
+                
+                <div class="footer-contact">
+                    <h4>Contact</h4>
+                    <p>Bengkulu, Indonesia</p>
+                    <p>info@bencoolen.com</p>
+                    <p>+62 812 3456 7890</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 Jejak Bencoolen. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="..\script.js"></script>
+    <script src="..\user.js"></script>
+
+</body>
+</html>

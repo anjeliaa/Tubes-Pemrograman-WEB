@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Users & Reviews</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div>
+      <h2>Admin Panel</h2>
+
+      <ul>
+        <li><a href="dashboard.html"><i class="fa fa-chart-line"></i> Dashboard</a></li>
+        <li><a href="destination.html"><i class="fa fa-map"></i> Destinations</a></li>
+        <li><a href="blogs.html"><i class="fa fa-pen"></i> Blogs</a></li>
+        <li class="active"><a href="users.html"><i class="fa fa-users"></i> Users</a></li>
+      </ul>
+    </div>
+
+    <button class="btn-logout" onclick="logout()">
+      <i class="fa fa-sign-out-alt"></i> Logout
+    </button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <!-- HEADER -->
+    <div class="admin-header">
+      <h1>Users & Reviews</h1>
+      <p>Kelola pengguna dan moderasi review wisata</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="admin-stats">
+      <div class="admin-card">
+        <i class="fa fa-users"></i>
+        <h3 id="totalUsers">0</h3>
+        <p>Total Users</p>
+      </div>
+
+      <div class="admin-card">
+        <i class="fa fa-star"></i>
+        <h3 id="totalReviews">0</h3>
+        <p>Total Reviews</p>
+      </div>
+
+      <div class="admin-card">
+        <i class="fa fa-ban"></i>
+        <h3 id="bannedUsers">0</h3>
+        <p>Banned Users</p>
+      </div>
+
+      <div class="admin-card">
+        <i class="fa fa-check"></i>
+        <h3 id="activeUsers">0</h3>
+        <p>Active Users</p>
+      </div>
+    </div>
+
+    <!-- USERS LIST -->
+    <section class="admin-form">
+      <h3>Daftar User</h3>
+      <p style="color: var(--text-mid); font-size:.85rem;">
+        Klik ban untuk nonaktifkan user
+      </p>
+    </section>
+
+    <div class="admin-list" id="userList"></div>
+
+    <!-- REVIEWS -->
+    <section class="admin-form">
+      <h3>Moderasi Review</h3>
+      <p style="color: var(--text-mid); font-size:.85rem;">
+        Hapus review yang tidak sesuai
+      </p>
+    </section>
+
+    <div class="admin-list" id="reviewList"></div>
+
+  </main>
+
+</div>
+
+<script src="admin.js"></script>
+
+</body>
+</html>

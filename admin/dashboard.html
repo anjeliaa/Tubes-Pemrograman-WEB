@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Icon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div>
+      <h2>Admin Panel</h2>
+
+      <ul>
+        <li class="active">
+          <a href="dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+        </li>
+        <li>
+          <a href="destinations.html"><i class="fa-solid fa-map"></i> Destinations</a>
+        </li>
+        <li>
+          <a href="#"><i class="fa-solid fa-pen"></i> Blogs</a>
+        </li>
+        <li>
+          <a href="#"><i class="fa-solid fa-users"></i> Users</a>
+        </li>
+      </ul>
+    </div>
+
+    <button id="logoutBtn" class="btn-logout">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </button>
+  </aside>
+
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <div class="admin-header">
+      <h1>Dashboard Admin</h1>
+      <p>Selamat datang kembali</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="admin-stats">
+
+      <div class="admin-card">
+        <i class="fa-solid fa-map"></i>
+        <h3 id="totalWisata">0</h3>
+        <p>Total Wisata</p>
+      </div>
+
+      <div class="admin-card">
+        <i class="fa-solid fa-users"></i>
+        <h3 id="totalUser">0</h3>
+        <p>Total User</p>
+      </div>
+
+      <div class="admin-card">
+        <i class="fa-solid fa-newspaper"></i>
+        <h3 id="totalBlog">0</h3>
+        <p>Total Blog</p>
+      </div>
+
+      <div class="admin-card">
+        <i class="fa-solid fa-star"></i>
+        <h3 id="totalReview">0</h3>
+        <p>Total Review</p>
+      </div>
+
+    </div>
+
+    <!-- RECENT -->
+    <div class="admin-section">
+      <h2>Wisata Terbaru</h2>
+      <div id="recentWisata" class="admin-list"></div>
+    </div>
+
+  </main>
+
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile | Jejak Bencoolen</title>
+
+  <link rel="stylesheet" href="..\style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="dashboard.html" class="nav-logo">
+                <span class="logo-text">Jejak <strong>Bencoolen</strong></span>
+            </a>
+            
+            <ul class="nav-menu">
+                <li><a href="dashboard.html" class="nav-link">Home</a></li>
+                <li><a href="explore.html" class="nav-link">Explore</a></li>
+                <li><a href="favorites.html" class="nav-link">Favorites</a></li>
+            </ul>
+            
+            <div class="nav-user" id="navUser">
+                <img id="navAvatar" src="img/default-avatar.png" alt="User Avatar">
+                <i class="fa-solid fa-chevron-down"></i>
+                <div class="nav-dropdown">
+                    <a href="profile.html">
+                        <i class="fa-regular fa-user"></i> Profile
+                    </a>
+                    <button id="logoutBtn">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <section class="profile-section">
+      <div class="container">
+        <div class="profile-wrapper">
+          <div class="profile-sidebar">
+            <img id="profileAvatar" src="../img/default-avatar.png">
+            <input type="file" id="uploadAvatar" accept="image/*" hidden>
+            <button id="changePhoto" type="button">
+              <i class="fa-solid fa-camera"></i> Change Photo
+            </button>
+            <h3 id="profileName">User</h3>
+            <p id="profileEmail">email@gmail.com</p>
+            
+            <!-- INFO WISATA USER -->
+            <div class="profile-info-box">
+              <div class="info-item">
+                <i class="fa-solid fa-location-dot"></i>
+                <span id="profileCity">Kota belum diisi</span>
+              </div>
+
+              <div class="info-item">
+                <i class="fa-solid fa-earth-asia"></i>
+                <span id="profileCountry">Negara belum diisi</span>
+              </div>
+
+              <div class="info-item">
+                <i class="fa-solid fa-map"></i>
+                <span id="profileRegion">Domisili belum diisi</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="profile-content">
+            <form id="profileForm" class="profile-form">
+              <label>Full Name</label>
+              <input type="text" id="inputName" placeholder="Masukkan nama kamu">
+              <label>Bio</label>
+              <textarea id="inputBio" placeholder="Ceritakan tentang kamu..."></textarea>
+              <label>City (Kota)</label>
+              <input type="text" id="inputCity" placeholder="Contoh: Kota Bengkulu">
+              <label>Country (Negara)</label>
+              <input type="text" id="inputCountry" placeholder="Contoh: Indonesia">
+              <label>Region / Domisili</label>
+              <input type="text" id="inputRegion" placeholder="Contoh: Bengkulu">
+              <label>Preferred Travel Type</label>
+              <select id="inputPreference">
+                <option value="nature">Alam</option>
+                <option value="beach">Pantai</option>
+                <option value="mountain">Gunung</option>
+                <option value="city">Kota</option>
+              </select>
+              <button type="submit">
+                <i class="fa-solid fa-floppy-disk"></i> Save Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h2>Jejak Bencoolen</h2>
+                    <p>
+                        Discover Bengkulu through curated destinations, inspiring travel stories, and authentic local experiences.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Explore</h4>
+                    <a href="index.html">Home</a>
+                    <a href="explore.html">Explore</a>
+                    <a href="favorites.html">Favorites</a>
+                    <a href="profile.html">Profile</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <a href="#">Help Center</a>
+                    <a href="#">Travel Guide</a>
+                    <a href="#">Terms & Privacy</a>
+                </div>
+                
+                <div class="footer-contact">
+                    <h4>Contact</h4>
+                    <p>Bengkulu, Indonesia</p>
+                    <p>info@bencoolen.com</p>
+                    <p>+62 812 3456 7890</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 Jejak Bencoolen. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+<script src="..\user.js"></script>
+<script src="..\script.js"></script>
+</body>
+</html>

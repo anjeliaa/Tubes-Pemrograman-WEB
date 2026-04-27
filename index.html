@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wisata Bengkulu</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <span class="logo-text">Jejak <strong>Bencoolen</strong></span>
+            </a>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link active">Home</a></li>
+                <li><a href="destination.html" class="nav-link">Destination</a></li>
+                <li><a href="Blogs.html" class="nav-link">Blogs</a></li>
+                <li><a href="About.html" class="nav-link">About</a></li>
+            </ul>
+            
+            <div class="nav-auth">
+                <a href="login.html" class="btn-login">Login</a>
+                <a href="register.html" class="btn-register">Sign Up</a>
+            </div>
+            
+            <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+    
+    <section class="hero" id="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <span class="hero-badge">Provinsi Bengkulu, Indonesia</span>
+            <h1 class="hero-title">Explore Bengkulu<br /><em>Where Nature Meets Culture</em></h1>
+            <p class="hero-subtitle"> Discover the best destinations, hidden gems, and travel experiences in one place.</p>
+            <div class="hero-stats">
+                <div class="stat-item"><span class="stat-num">40+</span><span class="stat-label">Destinasi</span></div>
+                <div class="stat-divider"></div>
+                <div class="stat-item"><span class="stat-num">9</span><span class="stat-label">Kabupaten</span></div>
+                <div class="stat-divider"></div>
+                <div class="stat-item"><span class="stat-num">4.8★</span><span class="stat-label">Rating</span></div>
+            </div>
+        </div>
+        <div class="hero-scroll-hint">
+            <span>Scroll</span>
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <section class="highlights" id="highlights">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Highlights</span>
+                <h2 class="section-title">Why Visit Bengkulu?</h2>
+                <p class="section-subtitle">
+                    Discover the unique charm of Bengkulu through its nature, culture, and experiences.
+                </p>
+            </div>
+            <div class="highlight-grid">
+                <div class="highlight-card">
+                    <i class="fa-solid fa-umbrella-beach"></i>
+                    <h4>Stunning Beaches</h4>
+                    <p>
+                        Relax on beautiful coastlines with crystal-clear water and golden sunsets.
+                    </p>
+                </div>
+                <div class="highlight-card">
+                    <i class="fa-solid fa-landmark"></i>
+                    <h4>Rich History</h4>
+                    <p>
+                        Explore historical landmarks that tell the story of Bengkulu’s past.
+                    </p>
+                </div>
+                <div class="highlight-card">
+                    <i class="fa-solid fa-mountain"></i>
+                    <h4>Natural Escape</h4>
+                    <p>
+                        Experience mountains, forests, and untouched natural beauty.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="destination-preview">
+        <div class="container">
+            <div class="preview-header">
+                <div>
+                    <h2>What is your lifestyle?</h2>
+                    <p class="preview-sub">Find your perfect travel experience</p>
+                </div>
+                <a href="destination.html" class="see-all"> See all destinations →</a>
+            </div>
+        </div>
+        <div class="preview-full">
+            <div class="preview-grid">
+                <div class="preview-card">
+                    <img src="img/pantai panjang.jpg" class="preview-img">
+                    <div class="preview-overlay">
+                        <h3>Beach Tours</h3>
+                        <span>20 tours</span>
+                    </div>
+                </div>
+                
+                <div class="preview-card">
+                    <img src="img/pulau tikus.jpg" class="preview-img">
+                    <div class="preview-overlay">
+                        <h3>Island Tours</h3>
+                        <span>20 tours</span>
+                    </div>
+                </div>
+
+                <div class="preview-card">
+                    <img src="img/bukit kaba.jpg" class="preview-img">
+                    <div class="preview-overlay">
+                        <h3>Adventure Tours</h3>
+                        <span>20 tours</span>
+                    </div>
+                </div>
+                
+                <div class="preview-card">
+                    <img src="img/benteng malborough.jpg" class="preview-img">
+                    <div class="preview-overlay">
+                        <h3>City Tours</h3>
+                        <span>20 tours</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+        
+    <section class="blog-preview" id="blogs">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Blog</span>
+                <h2 class="section-title">Latest Travel Stories</h2>
+                <p class="section-subtitle">
+                    Stories, tips, and hidden gems from Bengkulu.
+                </p>
+            </div>
+
+            <div class="blog-grid">
+                
+                <article class="blog-card">
+                    <div class="blog-img-wrap">
+                        <img src="img/pantai panjang.jpg" alt="">
+                        <span class="blog-category beach">Beach</span>
+                    </div>
+                    
+                    <div class="blog-body">
+                        <div class="blog-meta">
+                            <span>May 2026</span>
+                            <span>• 5 min read</span>
+                        </div>
+                        <h3 class="blog-title">
+                            Why Pantai Panjang is Perfect for Sunset Lovers
+                        </h3>
+                        <p class="blog-excerpt">
+                            Discover the beauty of Bengkulu’s most iconic beach and why it’s a must-visit for relaxing evenings.
+                        </p>
+                        <a href="#" class="blog-link">
+                            Read More →
+                        </a>
+                    </div>
+                </article>
+
+                <article class="blog-card">
+                    <div class="blog-img-wrap">
+                        <img src="img/benteng malborough.jpg" alt="">
+                        <span class="blog-category history">History</span>
+                    </div>
+                    <div class="blog-body">
+                        <div class="blog-meta">
+                            <span>May 2026</span>
+                            <span>• 4 min read</span>
+                        </div>
+                        <h3 class="blog-title">
+                            Exploring the Legacy of Fort Marlborough
+                        </h3>
+                        <p class="blog-excerpt">
+                            A deep dive into one of Southeast Asia’s largest British forts and its historical significance.
+                        </p>
+                        <a href="#" class="blog-link">
+                            Read More →
+                        </a>
+                    </div>
+                </article>
+                
+                <article class="blog-card">
+                    <div class="blog-img-wrap">
+                        <img src="img/bukit kaba.jpg" alt="">
+                        <span class="blog-category nature">Nature</span>
+                    </div>
+                    <div class="blog-body">
+                        <div class="blog-meta">
+                            <span>May 2026</span>
+                            <span>• 6 min read</span>
+                        </div>
+                        <h3 class="blog-title">
+                            Hiking Bukit Kaba: What You Need to Know
+                        </h3>
+                        <p class="blog-excerpt">
+                            A complete guide for beginners who want to explore this stunning volcano safely.
+                        </p>
+                        <a href="#" class="blog-link">
+                            Read More →
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="cta-container">
+            <h2 class="cta-title">
+                Ready to Explore Bengkulu?
+            </h2>
+            <p class="cta-subtitle">
+                Discover hidden gems, breathtaking beaches, and unforgettable experiences waiting for you.
+            </p>
+            <div class="cta-actions">
+                <a href="destination.html" class="btn-cta primary">
+                    Explore Destinations
+                </a>
+                <a href="Blogs.html" class="btn-cta outline">
+                    Read Travel Stories
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h2>Jejak Bencoolen</h2>
+                    <p>
+                        Discover Bengkulu through curated destinations, inspiring travel stories, and authentic local experiences.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Explore</h4>
+                    <a href="index.html">Home</a>
+                    <a href="destination.html">Destinations</a>
+                    <a href="Blogs.html">Blog</a>
+                    <a href="About.html">About</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <a href="#">Help Center</a>
+                    <a href="#">Travel Guide</a>
+                    <a href="#">Terms & Privacy</a>
+                </div>
+                
+                <div class="footer-contact">
+                    <h4>Contact</h4>
+                    <p>Bengkulu, Indonesia</p>
+                    <p>info@bencoolen.com</p>
+                    <p>+62 812 3456 7890</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 Jejak Bencoolen. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="script.js"></script>
+</body>
+</html>

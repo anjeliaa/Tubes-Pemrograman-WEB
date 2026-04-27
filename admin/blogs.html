@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Blogs</title>
+
+  <!-- FONT -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- ICON -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div>
+      <h2>Admin Panel</h2>
+
+      <ul>
+        <li><a href="dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+        <li><a href="destinations.html"><i class="fa-solid fa-map"></i> Destinations</a></li>
+        <li class="active"><a href="blogs.html"><i class="fa-solid fa-pen"></i> Blogs</a></li>
+        <li><a href="users.html"><i class="fa-solid fa-users"></i> Users</a></li>
+      </ul>
+    </div>
+
+    <button id="logoutBtn" class="btn-logout">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <!-- HEADER -->
+    <div class="admin-header">
+      <h1>Manage Blogs</h1>
+      <p>Tambah, edit, dan hapus artikel blog</p>
+    </div>
+
+    <!-- FORM -->
+    <form id="formBlog" class="admin-form">
+
+      <input type="text" id="title" placeholder="Judul Blog" required>
+
+      <select id="category" required>
+        <option value="">Pilih Kategori</option>
+        <option value="beach">Beach</option>
+        <option value="nature">Nature</option>
+        <option value="history">History</option>
+      </select>
+
+      <textarea id="content" placeholder="Isi Blog" required></textarea>
+
+      <input type="file" id="image" accept="image/*" required>
+
+      <img id="previewImg">
+
+      <button type="submit">Simpan Blog</button>
+
+    </form>
+
+    <!-- LIST -->
+    <div id="blogList" class="admin-list"></div>
+
+  </main>
+
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>
