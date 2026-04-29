@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const isAuthPage = ["/login", "/register"].some(p => path.includes(p));
   const isProfilePage = path.includes("/user/profile");
   const isDashboard = path.includes("/user/dashboard");
-
+  const isTripsPage = path.includes("/user/trips");
   const isAdminPage = path.startsWith("/admin");
   const isUserPage = path.startsWith("/user");
 

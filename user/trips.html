@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Favorites - Jejak Bencoolen</title>
+    <title>My Trips - Jejak Bencoolen</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="..\style.css">
@@ -19,8 +19,8 @@
             <ul class="nav-menu">
                 <li><a href="dashboard.html" class="nav-link">Home</a></li>
                 <li><a href="explore.html" class="nav-link">Explore</a></li>
-                <li><a href="favorites.html" class="nav-link active">Favorites</a></li>
-                <li><a href="trips.html" class="nav-link">Trips</a></li>
+                <li><a href="favorites.html" class="nav-link">Favorites</a></li>
+                <li><a href="trips.html" class="nav-link active">Trips</a></li>
             </ul>
             
             <div class="nav-user" id="navUser">
@@ -38,30 +38,19 @@
         </div>
     </nav>
 
-    <header class="dest-hero" id="destHero"">
+    <header class="dest-hero" id="destHero">
         <div class="container">
-            <h1 id="heroTitle">My Favorite Destinations</h1>
+            <h1 id="heroTitle">Riwayat Perjalanan</h1>
             <p id="heroDesc">
-                Daftar tempat wisata di Bengkulu yang telah Anda tandai sebagai favorit untuk rencana perjalanan Anda.
+                Tempat-tempat indah di Bengkulu yang telah kamu kunjungi dan menjadi bagian dari jejak perjalananmu.
             </p>
         </div>
     </header>
 
     <main style="padding: 60px 0; min-height: 50vh; background: var(--cream);">
         <section class="container">
-            <div id="favoritesGrid" class="wisata-grid">
+            <div id="tripsContainer" class="wisata-grid">
                 </div>
-
-            <div id="emptyFavorites" style="display: none; text-align: center; padding: 40px 20px;">
-                <div style="font-size: 4rem; color: var(--sand); margin-bottom: 20px;">
-                    <i class="fa-solid fa-heart-crack"></i>
-                </div>
-                <h3 style="color: var(--forest);">Daftar Favorit Masih Kosong</h3>
-                <p style="color: var(--text-mid); margin-bottom: 25px;">Mungkin ini saatnya mencari inspirasi baru?</p>
-                <a href="explore.html" class="btn-submit" style="text-decoration: none; display: inline-block; width: auto; padding: 12px 30px;">
-                    Cari Destinasi Wisata
-                </a>
-            </div>
         </section>
     </main>
 
@@ -71,7 +60,12 @@
             <div id="modalContent" class="modal-content"></div>
         </div>
     </div>
-
+<div id="imagePreviewModal" class="modal-overlay" style="z-index: 2000;">
+    <span onclick="closeImagePreview()" style="position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; cursor: pointer;">&times;</span>
+    <div style="display: flex; justify-content: center; align-items: center; height: 100%; padding: 20px;">
+        <img id="fullImage" src="" style="max-width: 90%; max-height: 90vh; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+    </div>
+</div>
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">

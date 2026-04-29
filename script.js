@@ -208,7 +208,7 @@ function renderFavoritesPage() {
           <span class="stars">${generateStars(wisata.rating || 0)}</span>
           <span>${Number(wisata.rating || 0).toFixed(1)}</span>
         </div>
-        <button class="btn-submit" style="background:#e74c3c; margin-top:10px;" onclick="toggleFavorite(${wisata.id})">
+        <button class="btn-submit" style="background:#e74c3c; margin-top:10px;" onclick="confirmDeleteFavorite(${wisata.id})">
           <i class="fa-solid fa-trash"></i> Hapus
         </button>
       </div>
@@ -341,9 +341,14 @@ async function openModal(id) {
   <img src="${imgSource}" class="modal-img">
 
   <div class="modal-body">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h2>${wisata.nama}</h2>
-      <button id="favBtn" style="background:none; border:none; cursor:pointer; font-size:1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+      <h2 style="flex: 1;">${wisata.nama}</h2>
+      
+      <button onclick="markAsVisited(${id})" class="btn-visited" style="background: #2e7d32; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">
+        <i class="fa-solid fa-check-square"></i> Pernah ke Sini
+      </button>
+
+      <button id="favBtn" style="background:none; border:none; cursor:pointer; font-size:1.5rem; margin-left: 5px;">
         <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart" style="color: #e74c3c;"></i>
       </button>
     </div>
@@ -380,30 +385,31 @@ async function openModal(id) {
 
   renderReviewsUI(reviewsData, reviewLimit);
   setupReviewLogic(id);
+  
   // Ambil rekomendasi penginapan
-const penginapanContainer = document.getElementById("penginapanList");
-if (penginapanContainer) {
-  try {
-    const resPenginapan = await fetch(`http://localhost:3000/api/penginapan/rekomendasi?lokasi=${encodeURIComponent(wisata.lokasi)}`);
-    const dataPenginapan = await resPenginapan.json();
-    if (dataPenginapan.status === "success" && dataPenginapan.data.length > 0) {
-      penginapanContainer.innerHTML = dataPenginapan.data.map(p => `
-        <div class="review-item" style="display: flex; align-items: center; gap: 10px;">
-          <img src="${p.gambar}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px;" onerror="this.src='../img/default-hotel.jpg'">
-          <div style="flex: 1;">
-            <strong>${p.nama}</strong><br>
-            <small>${p.alamat || ''}</small><br>
-            <span style="color: var(--moss); font-weight: 600;">Rp ${Number(p.harga).toLocaleString('id-ID')} / malam</span>
+  const penginapanContainer = document.getElementById("penginapanList");
+  if (penginapanContainer) {
+    try {
+      const resPenginapan = await fetch(`http://localhost:3000/api/penginapan/rekomendasi?lokasi=${encodeURIComponent(wisata.lokasi)}`);
+      const dataPenginapan = await resPenginapan.json();
+      if (dataPenginapan.status === "success" && dataPenginapan.data.length > 0) {
+        penginapanContainer.innerHTML = dataPenginapan.data.map(p => `
+          <div class="review-item" style="display: flex; align-items: center; gap: 10px;">
+            <img src="${p.gambar}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px;" onerror="this.src='../img/default-hotel.jpg'">
+            <div style="flex: 1;">
+              <strong>${p.nama}</strong><br>
+              <small>${p.alamat || ''}</small><br>
+              <span style="color: var(--moss); font-weight: 600;">Rp ${Number(p.harga).toLocaleString('id-ID')} / malam</span>
+            </div>
           </div>
-        </div>
-      `).join("");
-    } else {
-      penginapanContainer.innerHTML = "<p style='color: gray; font-size: 0.9rem;'>Belum ada rekomendasi penginapan untuk lokasi ini.</p>";
+        `).join("");
+      } else {
+        penginapanContainer.innerHTML = "<p style='color: gray; font-size: 0.9rem;'>Belum ada rekomendasi penginapan untuk lokasi ini.</p>";
+      }
+    } catch (error) {
+      penginapanContainer.innerHTML = "<p style='color: red;'>Gagal memuat data penginapan.</p>";
     }
-  } catch (error) {
-    penginapanContainer.innerHTML = "<p style='color: red;'>Gagal memuat data penginapan.</p>";
   }
-}
 }
 
 function renderReviewsUI(reviews, limit = 2) {
@@ -496,6 +502,16 @@ function closeModal() {
   }
 }
 
+// Fungsi baru untuk konfirmasi sebelum hapus
+function confirmDeleteFavorite(wisataId) {
+    // Menampilkan dialog konfirmasi bawaan browser
+    const yakin = confirm("Apakah Anda yakin ingin menghapus destinasi ini dari daftar favorit?");
+    
+    if (yakin) {
+        // Jika klik 'OK', jalankan fungsi toggleFavorite yang sudah ada
+        toggleFavorite(wisataId);
+    }
+}
 /* =========================================
    INITIALIZATION (FETCH DATA SAAT LOAD)
 ========================================= */
@@ -705,3 +721,220 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 });
+/* =========================================
+   TRIPS / RIWAYAT PERJALANAN (CHECK-IN)
+========================================= */
+async function markAsVisited(wisataId) {
+  if (!getIsLoggedIn()) {
+    alert("Silakan login terlebih dahulu!");
+    window.location.href = "../login.html"; // Sesuaikan jika path login berbeda
+    return;
+  }
+
+  const user = getCurrentUser();
+
+  try {
+    const response = await fetch('http://localhost:3000/api/trips', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: user.id, wisata_id: wisataId })
+    });
+    const result = await response.json();
+    alert(result.message); // Munculkan notifikasi sukses/sudah pernah
+  } catch (error) {
+    console.error("Gagal menyimpan trip:", error);
+    alert("Terjadi kesalahan server saat menyimpan jejak perjalanan.");
+  }
+}
+/* =========================================
+   TAMPILKAN DATA DI HALAMAN TRIPS
+========================================= */
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.location.pathname.includes("trips.html")) {
+    loadUserTrips();
+  }
+});
+
+async function loadUserTrips() {
+  const container = document.getElementById("tripsContainer");
+  if (!container) return; 
+
+  const user = getCurrentUser();
+  if (!user) {
+    container.innerHTML = "<p style='text-align:center;'>Silakan login terlebih dahulu.</p>";
+    return;
+  }
+
+  container.innerHTML = "<p style='grid-column: 1/-1; text-align:center;'>Memuat riwayat perjalanan...</p>";
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/trips/${user.id}`);
+    const result = await response.json();
+
+    if (result.status === "success") {
+      if (result.data.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 40px 20px;">
+            <div style="font-size: 4rem; color: var(--sand); margin-bottom: 20px;">
+              <i class="fa-solid fa-map-location-dot"></i>
+            </div>
+            <h3 style="color: var(--forest);">Belum Ada Riwayat Perjalanan</h3>
+            <p style="color: var(--text-mid); margin-bottom: 25px;">Ayo mulai jelajahi keindahan Bengkulu dan tandai jejakmu!</p>
+            <a href="explore.html" class="btn-submit" style="text-decoration: none; display: inline-block; width: auto; padding: 12px 30px;">
+              Cari Destinasi Wisata
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = "";
+      result.data.forEach(trip => {
+        const card = document.createElement("div");
+        card.className = "wisata-card show";
+        
+        // 1. Gambar utama tetap menggunakan gambar dari database wisata
+        const imgSource = trip.gambar || trip.image || '../img/default-image.jpg';
+        const date = new Date(trip.tanggal_kunjungan).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        // 2. Olah data galeri foto bukti
+        let galeriHtml = "";
+        if (trip.bukti_foto) {
+            let photos = [];
+            try { photos = JSON.parse(trip.bukti_foto); } catch(e) { photos = [trip.bukti_foto]; }
+            
+            // Buat HTML untuk deretan foto + TOMBOL HAPUS DI ATAS FOTO
+            photos.forEach((p, index) => {
+                galeriHtml += `
+                <div style="position: relative; display: inline-block; margin-right: 10px; margin-bottom: 10px;">
+                    <img src="${p}" style="width: 65px; height: 65px; object-fit: cover; border-radius: 8px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer;" 
+                         onclick="openImagePreview('${p}')">
+                    
+                    <button onclick="window.deleteFotoBukti(${trip.trip_id}, ${index})" 
+                            style="position: absolute; top: -8px; right: -8px; background: #ff4757; color: white; border: 2px solid white; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 10;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>`;
+            });
+        }
+        // 3. Render Kartu
+        card.innerHTML = `
+          <div class="card-img-wrap">
+            <img src="${imgSource}" class="card-img" alt="${trip.nama}" style="height: 200px; object-fit: cover;">
+            <span class="card-badge" style="background: #2e7d32;">Selesai Dikunjungi</span>
+          </div>
+          <div class="card-body" style="display: flex; flex-direction: column; min-height: 250px;">
+            <h3 class="card-title">${trip.nama}</h3>
+            <p class="card-location" style="color: gray; font-size: 0.9rem; margin-bottom: 10px;">
+              <i class="fa-solid fa-map-pin"></i> ${trip.lokasi}
+            </p>
+            <div style="background: #e8f5e9; color: #2e7d32; padding: 8px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; margin-bottom: 15px;">
+              <i class="fa-solid fa-calendar-check"></i> Pada: ${date}
+            </div>
+
+            <div style="border-top: 1px dashed #ccc; padding-top: 15px; margin-top: auto;">
+                <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; color: var(--forest);">Galeri Kenangan:</p>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; min-height: 50px; align-items: center;">
+                    ${galeriHtml || '<span style="font-size: 0.8rem; color: gray; font-style: italic;">Belum ada foto bukti diunggah.</span>'}
+                </div>
+                
+                <input type="file" id="upload-${trip.trip_id}" accept="image/*" style="display:none;" onchange="window.uploadFotoBukti(${trip.trip_id})">
+                
+                <button onclick="document.getElementById('upload-${trip.trip_id}').click()" style="width: 100%; background: white; color: var(--forest); border: 1px solid var(--forest); padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold; transition: 0.3s;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Foto Kenangan
+                </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+  } catch (error) {
+    console.error("Gagal memuat trips:", error);
+    container.innerHTML = "<p style='grid-column: 1/-1; text-align:center; color:red;'>Gagal memuat data.</p>";
+  }
+}
+
+// Fungsi untuk menangani proses upload foto dari tombol di atas
+window.uploadFotoBukti = function(tripId) {
+    const input = document.getElementById(`upload-${tripId}`);
+    const file = input.files[0];
+    
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+        alert("Ukuran foto maksimal 2MB!");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        const base64Photo = e.target.result;
+        
+        try {
+            const response = await fetch(`http://localhost:3000/api/trips/${tripId}/photo`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ foto: base64Photo })
+            });
+            const result = await response.json();
+            
+            if (result.status === "success") {
+                alert("Foto kenangan berhasil ditambahkan!");
+                loadUserTrips(); // Otomatis me-refresh kartu agar foto baru langsung muncul
+            } else {
+                alert(result.message);
+            }
+        } catch(error) {
+            console.error(error);
+            alert("Gagal mengunggah foto.");
+        }
+    };
+    reader.readAsDataURL(file);
+};
+// Fungsi untuk menghapus foto dari galeri
+window.deleteFotoBukti = async function(tripId, index) {
+    // Munculkan peringatan sebelum menghapus
+    if (!confirm("Apakah kamu yakin ingin menghapus foto kenangan ini?")) return;
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/trips/${tripId}/photo`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ photoIndex: index })
+        });
+        const result = await response.json();
+        
+        if (result.status === "success") {
+            loadUserTrips(); // Langsung refresh galeri tanpa perlu reload halaman
+        } else {
+            alert(result.message);
+        }
+    } catch(error) {
+        console.error("Gagal menghapus foto:", error);
+        alert("Terjadi kesalahan saat menghubungi server.");
+    }
+};
+// Fungsi untuk membuka preview gambar full
+window.openImagePreview = function(src) {
+    const modal = document.getElementById("imagePreviewModal");
+    const fullImg = document.getElementById("fullImage");
+    
+    fullImg.src = src;
+    modal.classList.add("open"); // Memanfaatkan class .open yang sudah ada di CSS kamu
+    document.body.style.overflow = "hidden"; // Biar gak bisa scroll saat liat foto
+};
+
+// Fungsi untuk menutup preview
+window.closeImagePreview = function() {
+    const modal = document.getElementById("imagePreviewModal");
+    modal.classList.remove("open");
+    document.body.style.overflow = ""; // Balikin scroll
+};
+
+// Tambahan: Tutup modal kalau user klik area di luar gambar
+document.getElementById("imagePreviewModal").onclick = function(e) {
+    if (e.target.id === "imagePreviewModal") {
+        closeImagePreview();
+    }
+};
