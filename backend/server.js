@@ -201,6 +201,7 @@ app.post('/api/reviews', async (req, res) => {
         res.status(500).json({ status: "error", message: "Gagal memproses ulasan." });
     }
 });
+
 /* ===============================
    API BLOGS (ARTIKEL)
 =============================== */
@@ -255,6 +256,7 @@ app.delete('/api/blogs/:id', async (req, res) => {
         res.status(500).json({ status: "error", message: "Gagal menghapus blog" });
     }
 });
+
 /* ===============================
    API USER STATS (DASHBOARD)
 =============================== */
@@ -270,8 +272,9 @@ app.get('/api/user/stats/:id', async (req, res) => {
         const [revResult] = await pool.execute('SELECT COUNT(*) as total FROM reviews WHERE user_id = ?', [userId]);
         const totalReviews = revResult[0].total;
 
-        // 3. (Opsional) Karena belum ada tabel 'Trips', kita set ke 0 atau samakan dengan Reviews
-        const totalTrips = 0; 
+        // 3. Hitung jumlah Trips 
+        const [tripResult] = await pool.execute('SELECT COUNT(*) as total FROM trips_history WHERE user_id = ?', [userId]);
+        const totalTrips = tripResult[0].total; 
 
         res.json({
             status: "success",
@@ -284,6 +287,7 @@ app.get('/api/user/stats/:id', async (req, res) => {
         res.status(500).json({ status: "error", message: "Gagal mengambil statistik user" });
     }
 });
+
 // ==========================================
 // API UNTUK DASHBOARD ADMIN
 // ==========================================
@@ -313,6 +317,7 @@ app.get('/api/admin/stats', async (req, res) => {
         res.status(500).json({ status: "error", message: "Gagal mengambil data" });
     }
 });
+
 // Ambil daftar lokasi unik yang sudah terdaftar di database
 app.get('/api/locations', async (req, res) => {
     try {
@@ -475,6 +480,102 @@ app.delete('/api/penginapan/:id', async (req, res) => {
   }
 });
 
+/* ===============================
+   API TRIPS (RIWAYAT PERJALANAN)
+=============================== */
+// 1. Simpan riwayat (Check-in)
+app.post('/api/trips', async (req, res) => {
+    const { user_id, wisata_id } = req.body;
+    try {
+        // Cek apakah user sudah pernah menandai tempat ini
+        const [exist] = await pool.execute('SELECT * FROM trips_history WHERE user_id = ? AND wisata_id = ?', [user_id, wisata_id]);
+        if (exist.length > 0) {
+            return res.json({ status: "info", message: "Kamu sudah pernah menandai tempat ini!" });
+        }
+        await pool.execute('INSERT INTO trips_history (user_id, wisata_id) VALUES (?, ?)', [user_id, wisata_id]);
+        res.json({ status: "success", message: "Jejak perjalananmu berhasil dicatat!" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Gagal menyimpan riwayat perjalanan." });
+    }
+});
+
+// 2. Ambil daftar riwayat user (PERBAIKAN: Menambahkan t.bukti_foto pada query)
+app.get('/api/trips/:userId', async (req, res) => {
+    try {
+        const query = `
+            SELECT t.id as trip_id, t.tanggal_kunjungan, t.bukti_foto, w.* FROM trips_history t 
+            JOIN wisata w ON t.wisata_id = w.id 
+            WHERE t.user_id = ? 
+            ORDER BY t.tanggal_kunjungan DESC
+        `;
+        const [rows] = await pool.execute(query, [req.params.userId]);
+        res.json({ status: "success", data: rows });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Gagal mengambil riwayat perjalanan." });
+    }
+});
+
+// 3. Tambah Foto Bukti ke Perjalanan yang Sudah Ada
+app.post('/api/trips/:tripId/photo', async (req, res) => {
+    const { tripId } = req.params;
+    const { foto } = req.body;
+    
+    try {
+        // Ambil data trip yang ada
+        const [rows] = await pool.execute('SELECT bukti_foto FROM trips_history WHERE id = ?', [tripId]);
+        if (rows.length === 0) return res.status(404).json({ message: "Data perjalanan tidak ditemukan." });
+
+        let photos = [];
+        // Jika sebelumnya sudah ada foto, kita ekstrak dulu datanya
+        if (rows[0].bukti_foto) {
+            try {
+                photos = JSON.parse(rows[0].bukti_foto);
+            } catch(e) {
+                photos = [rows[0].bukti_foto]; // Fallback untuk data lama
+            }
+        }
+        
+        // Tambahkan foto baru ke dalam daftar
+        photos.push(foto);
+
+        // Simpan kembali ke database dalam format JSON
+        await pool.execute('UPDATE trips_history SET bukti_foto = ? WHERE id = ?', [JSON.stringify(photos), tripId]);
+        res.json({ status: "success", message: "Foto bukti berhasil ditambahkan ke galeri!" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Gagal mengunggah foto bukti." });
+    }
+});
+// 4. Hapus Foto Kenangan dari Galeri
+app.delete('/api/trips/:tripId/photo', async (req, res) => {
+    const { tripId } = req.params;
+    const { photoIndex } = req.body; // Kita hapus berdasarkan urutan foto (index)
+
+    try {
+        const [rows] = await pool.execute('SELECT bukti_foto FROM trips_history WHERE id = ?', [tripId]);
+        if (rows.length === 0) return res.status(404).json({ message: "Data tidak ditemukan." });
+
+        if (rows[0].bukti_foto) {
+            let photos = JSON.parse(rows[0].bukti_foto);
+            
+            // Hapus 1 foto dari array berdasarkan posisinya (index)
+            photos.splice(photoIndex, 1);
+
+            // Jika setelah dihapus array-nya kosong, jadikan null. Jika masih ada sisa, bungkus lagi jadi JSON
+            const newBukti = photos.length > 0 ? JSON.stringify(photos) : null;
+
+            await pool.execute('UPDATE trips_history SET bukti_foto = ? WHERE id = ?', [newBukti, tripId]);
+            res.json({ status: "success", message: "Foto berhasil dihapus!" });
+        } else {
+            res.status(400).json({ message: "Tidak ada foto untuk dihapus." });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Gagal menghapus foto." });
+    }
+});
 // Jalankan Server
 app.listen(PORT, () => {
     console.log(`Server Backend berjalan di http://localhost:${PORT}`);
