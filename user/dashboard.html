@@ -6,12 +6,11 @@
     <title>Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="..\style.css">
+    <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
 
-    <!-- NAVBAR -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
             <a href="dashboard.html" class="nav-logo">
@@ -38,7 +37,7 @@
             </div>
         </div>
     </nav>
-    <!-- HERO -->
+    
     <section class="dash-hero">
       <div class="container dash-hero-inner">
         <div>
@@ -51,48 +50,45 @@
       </div>
     </section>
     
-    <!-- STATS -->
     <section class="dash-stats">
       <div class="container stats-grid">
         <div class="stat-card">
           <i class="fa-solid fa-heart"></i>
-          <h3>12</h3>
+          <h3 id="totalFav">12</h3>
           <p>Favorites</p>
         </div>
         
         <div class="stat-card">
           <i class="fa-solid fa-star"></i>
-          <h3>5</h3>
+          <h3 id="totalRev">5</h3>
           <p>Reviews</p>
         </div>
         
         <div class="stat-card">
           <i class="fa-solid fa-location-dot"></i>
-          <h3>3</h3>
+          <h3 id="totalTrips">3</h3>
           <p>Trips</p>
         </div>
       </div>
     </section>
     
-    <!-- REKOMENDASI -->
     <section class="dash-section">
       <div class="container">
         <div class="section-title">
           <h2><i class="fa-solid fa-compass"></i> Rekomendasi</h2>
           <p>Destinasi terbaik untuk kamu</p>
         </div>
+        
         <div class="rekom-grid" id="rekomGrid"></div>
-      </div>
-      <div class="rekom-grid" id="rekomGrid"></div>
-      
-      <div class="rekom-more">
-        <a href="explore.html" class="btn-view-more">
-          View More <i class="fa-solid fa-arrow-right"></i>
-        </a>
+        
+        <div class="rekom-more">
+          <a href="explore.html" class="btn-view-more">
+            View More <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
       </div>
     </section>
     
-    <!-- ACTIVITY -->
     <section class="dash-section">
       <div class="container">
         <div class="section-title">
@@ -102,7 +98,6 @@
       </div>
     </section>
 
-    <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -144,7 +139,7 @@
         </div>
     </footer>
     
-    <script src="..\user.js"></script>
-    <script src="..\script.js"></script>
+    <script src="../user.js"></script>
+    <script src="../script.js"></script>
 </body>
 </html>

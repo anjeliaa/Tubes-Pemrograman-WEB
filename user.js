@@ -1,8 +1,6 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
   let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-
   const path = window.location.pathname;
 
   const isAuthPage = ["/login", "/register"].some(p => path.includes(p));
@@ -13,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const isUserPage = path.startsWith("/user");
 
   /* =========================
-     AUTH CHECK
+      AUTH CHECK
   ========================= */
   if (!currentUser && !isAuthPage) {
     window.location.href = "/login.html";
@@ -21,11 +19,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================
-     ROLE REDIRECT
+      ROLE REDIRECT
   ========================= */
   if (currentUser) {
-
-    // ADMIN
     if (currentUser.role === "admin") {
       if (!isAdminPage) {
         window.location.href = "/admin/dashboard.html";
@@ -33,10 +29,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // USER
     if (currentUser.role === "user") {
-      const needProfile = !currentUser.isProfileComplete;
-
+      const needProfile = !(currentUser.is_profile_complete || currentUser.isProfileComplete);
       if (needProfile && !isProfilePage) {
         window.location.href = "/user/profile.html";
         return;
@@ -45,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================
-     NAV & UI
+      NAV & UI RENDER
   ========================= */
   const navUser = document.getElementById("navUser");
   const navAvatar = document.getElementById("navAvatar");
@@ -53,20 +47,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const welcomeText = document.getElementById("welcomeText");
   const logoutBtn = document.getElementById("logoutBtn");
 
-  function syncUserData(user) {
-    localStorage.setItem("currentUser", JSON.stringify(user));
-
-    users = users.map(u =>
-      u.email === user.email ? user : u
-    );
-
-    localStorage.setItem("users", JSON.stringify(users));
-  }
-
   function renderUserUI() {
     if (!currentUser) return;
 
-    const avatar = currentUser.avatar || "/img/default-avatar.png";
+    // DAFTAR FOTO KELINCI (SNOWBALL)
+    const defaultBunnies = [
+      "../img/team1.jpg",
+      "../img/team2.jpg",
+      "../img/team3.jpg",
+      "../img/team4.jpg"
+    ];
+
+    // Logika: Jika avatar kosong, pilih bunny berdasarkan Modulo ID
+    const avatar = currentUser.avatar || defaultBunnies[currentUser.id % 4];
 
     if (navAvatar) navAvatar.src = avatar;
     if (dashAvatar) dashAvatar.src = avatar;
@@ -80,197 +73,164 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================
-     DUMMY DATA (REKOMENDASI)
+      DASHBOARD REAL DATA (FETCH DB)
   ========================= */
-  const dataWisata = [
-    {
-      id: 1,
-      nama: "Pantai Panjang",
-      deskripsi: "Sunset terbaik di Bengkulu",
-      gambar: "/img/pantai panjang.jpg"
-    },
-    {
-      id: 2,
-      nama: "Air Terjun Curug",
-      deskripsi: "Alam yang masih asri",
-      gambar: "/img/curug trisakti curup.jpg"
-    },
-    {
-      id: 3,
-      nama: "Bukit Kaba",
-      deskripsi: "View pegunungan indah",
-      gambar: "/img/bukit kaba.jpg"
+  async function renderDashboardData() {
+    if (!isDashboard || !currentUser) return;
+
+    try {
+      const resStats = await fetch(`http://localhost:3000/api/user/stats/${currentUser.id}`);
+      const stats = await resStats.json();
+
+      if (stats.status === "success") {
+        const totalFavEl = document.getElementById("totalFav");
+        const totalRevEl = document.getElementById("totalRev");
+        const totalTripsEl = document.getElementById("totalTrips"); // Tambahkan ini
+        const activityList = document.getElementById("activityList");
+
+        if (totalFavEl) totalFavEl.textContent = stats.totalFavorites;
+        if (totalRevEl) totalRevEl.textContent = stats.totalReviews;
+        if (totalTripsEl) totalTripsEl.textContent = stats.totalTrips; // Tambahkan ini
+
+        if (activityList) {
+          activityList.innerHTML = `
+            <div class="activity-item">
+              <i class="fa-solid fa-heart"></i>
+              <p>Kamu memfavoritkan <strong>${stats.totalFavorites}</strong> destinasi.</p>
+            </div>
+            <div class="activity-item">
+              <i class="fa-solid fa-star"></i>
+              <p>Kamu telah menulis <strong>${stats.totalReviews}</strong> ulasan.</p>
+            </div>
+          `;
+        }
+      }
+
+      const resWisata = await fetch('http://localhost:3000/api/wisata');
+      const wisataResult = await resWisata.json();
+
+      const rekomGrid = document.getElementById("rekomGrid");
+      if (rekomGrid && wisataResult.status === "success") {
+        const top3 = wisataResult.data.slice(0, 3);
+        rekomGrid.innerHTML = top3.map(item => `
+          <div class="rekom-card">
+            <img src="${item.gambar || item.image}" alt="${item.nama}">
+            <div class="rekom-body">
+              <h3>${item.nama}</h3>
+              <p>${item.lokasi}</p>
+            </div>
+          </div>
+        `).join("");
+      }
+    } catch (error) {
+      console.error("Gagal memuat data dashboard:", error);
     }
-  ];
-
-  const activityData = [
-    { icon: "fa-star", text: "Kamu review Pantai Panjang" },
-    { icon: "fa-heart", text: "Kamu menambahkan Bukit Kaba ke favorit" }
-  ];
-
-  function renderRekomendasi() {
-    const container = document.getElementById("rekomGrid");
-    if (!container) return;
-
-    container.innerHTML = dataWisata.map(item => `
-      <div class="rekom-card">
-        <img src="${item.gambar}" alt="${item.nama}">
-        <div class="rekom-body">
-          <h3>${item.nama}</h3>
-          <p>${item.deskripsi}</p>
-        </div>
-      </div>
-    `).join("");
   }
 
-  function renderActivity() {
-    const container = document.getElementById("activityList");
-    if (!container) return;
-
-    container.innerHTML = activityData.map(item => `
-      <div class="activity-item">
-        <i class="fa-solid ${item.icon}"></i>
-        <p>${item.text}</p>
-      </div>
-    `).join("");
-  }
-
+  // Jalankan render
   renderUserUI();
-  renderRekomendasi();
-  renderActivity();
+  if (isDashboard) renderDashboardData();
 
   /* =========================
-     NAV DROPDOWN
+      NAV & LOGOUT LOGIC
   ========================= */
   if (navUser) {
-    navUser.addEventListener("click", (e) => {
-      e.stopPropagation();
-      navUser.classList.toggle("active");
-    });
-
-    document.addEventListener("click", () => {
-      navUser.classList.remove("active");
-    });
+    navUser.onclick = (e) => { e.stopPropagation(); navUser.classList.toggle("active"); };
+    document.onclick = () => navUser.classList.remove("active");
   }
 
-  /* =========================
-     LOGOUT FIX
-  ========================= */
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
+    logoutBtn.onclick = () => {
       localStorage.removeItem("currentUser");
       window.location.href = "/login.html";
-    });
+    };
   }
 
   /* =========================
-     ACTIVE NAV LINK
-  ========================= */
-  document.querySelectorAll(".nav-link").forEach(link => {
-    if (link.href === window.location.href) {
-      link.classList.add("active");
-    }
-  });
-
-  /* =========================
-     PROFILE PAGE
+      PROFILE PAGE LOGIC
   ========================= */
   if (isProfilePage && currentUser) {
-
     const profileImg = document.getElementById("profileAvatar");
     const profileName = document.getElementById("profileName");
     const profileEmail = document.getElementById("profileEmail");
-
-    const inputName = document.getElementById("inputName");
-    const inputBio = document.getElementById("inputBio");
-    const inputCity = document.getElementById("inputCity");
-    const inputCountry = document.getElementById("inputCountry");
-    const inputRegion = document.getElementById("inputRegion");
-    const inputPreference = document.getElementById("inputPreference");
-
+    const profileForm = document.getElementById("profileForm");
     const uploadAvatar = document.getElementById("uploadAvatar");
     const changePhoto = document.getElementById("changePhoto");
-    const profileForm = document.getElementById("profileForm");
 
-    const profileCity = document.getElementById("profileCity");
-    const profileCountry = document.getElementById("profileCountry");
-    const profileRegion = document.getElementById("profileRegion");
+    let currentAvatarBase64 = currentUser.avatar || "";
 
     function loadProfile() {
       if (profileName) profileName.textContent = currentUser.name || "User";
       if (profileEmail) profileEmail.textContent = currentUser.email;
-
-      if (inputName) inputName.value = currentUser.name || "";
-      if (inputBio) inputBio.value = currentUser.bio || "";
-      if (inputCity) inputCity.value = currentUser.city || "";
-      if (inputCountry) inputCountry.value = currentUser.country || "";
-      if (inputRegion) inputRegion.value = currentUser.region || "";
-      if (inputPreference) inputPreference.value = currentUser.preference || "nature";
-
+      
+      // Load avatar (pakai kelinci kalau kosong)
+      const defaultBunnies = ["../img/team1.jpg", "../img/team2.jpg", "../img/team3.jpg", "../img/team4.jpg"];
       if (profileImg) {
-        profileImg.src = currentUser.avatar || "/img/default-avatar.png";
+        profileImg.src = currentUser.avatar || defaultBunnies[currentUser.id % 4];
       }
 
-      if (profileCity) profileCity.textContent = currentUser.city || "Kota belum diisi";
-      if (profileCountry) profileCountry.textContent = currentUser.country || "Negara belum diisi";
-      if (profileRegion) profileRegion.textContent = currentUser.region || "Domisili belum diisi";
+      document.getElementById("inputName").value = currentUser.name || "";
+      document.getElementById("inputBio").value = currentUser.bio || "";
+      document.getElementById("inputCity").value = currentUser.city || "";
+      document.getElementById("inputCountry").value = currentUser.country || "";
+      document.getElementById("inputRegion").value = currentUser.region || "";
+      document.getElementById("inputPreference").value = currentUser.preference || "alam";
+
+      if (document.getElementById("profileCity")) document.getElementById("profileCity").textContent = currentUser.city || "-";
+      if (document.getElementById("profileCountry")) document.getElementById("profileCountry").textContent = currentUser.country || "-";
+      if (document.getElementById("profileRegion")) document.getElementById("profileRegion").textContent = currentUser.region || "-";
     }
 
     loadProfile();
 
-    if (profileForm) {
-      profileForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-
-        const updatedUser = {
-          ...currentUser,
-          name: inputName?.value,
-          bio: inputBio?.value,
-          city: inputCity?.value,
-          country: inputCountry?.value,
-          region: inputRegion?.value,
-          preference: inputPreference?.value,
-          isProfileComplete: true
-        };
-
-        currentUser = updatedUser;
-        syncUserData(updatedUser);
-        renderUserUI();
-
-        setTimeout(() => {
-          window.location.href = "/user/dashboard.html";
-        }, 300);
-      });
-    }
-
-    if (changePhoto && uploadAvatar) {
-      changePhoto.addEventListener("click", (e) => {
-        e.preventDefault();
-        uploadAvatar.click();
-      });
-    }
+    if (changePhoto) changePhoto.onclick = (e) => { e.preventDefault(); uploadAvatar.click(); };
 
     if (uploadAvatar) {
-      uploadAvatar.addEventListener("change", function () {
-        const file = this.files?.[0];
-        if (!file) return;
+      uploadAvatar.onchange = function () {
+        const file = this.files[0];
+        if (file && file.size <= 2 * 1024 * 1024) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            currentAvatarBase64 = e.target.result;
+            if (profileImg) profileImg.src = currentAvatarBase64;
+          };
+          reader.readAsDataURL(file);
+        } else {
+          alert("File terlalu besar (Maks 2MB)");
+        }
+      };
+    }
 
-        const reader = new FileReader();
-
-        reader.onload = (e) => {
-          currentUser.avatar = e.target.result;
-          syncUserData(currentUser);
-
-          if (profileImg) {
-            profileImg.src = currentUser.avatar;
-          }
-
-          renderUserUI();
+    if (profileForm) {
+      profileForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const updatedData = {
+          id: currentUser.id,
+          name: document.getElementById("inputName").value,
+          bio: document.getElementById("inputBio").value,
+          city: document.getElementById("inputCity").value,
+          country: document.getElementById("inputCountry").value,
+          region: document.getElementById("inputRegion").value,
+          preference: document.getElementById("inputPreference").value,
+          avatar: currentAvatarBase64
         };
 
-        reader.readAsDataURL(file);
-      });
+        try {
+          const res = await fetch('http://localhost:3000/api/user/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData)
+          });
+          const result = await res.json();
+          if (result.status === "success") {
+            localStorage.setItem("currentUser", JSON.stringify(result.user));
+            alert("Profil diperbarui!");
+            window.location.href = "/user/dashboard.html";
+          }
+        } catch (err) {
+          alert("Gagal menyimpan ke server.");
+        }
+      };
     }
   }
-
 });

@@ -1,86 +1,8 @@
-const dataWisata = [
-  {
-    id: 1,
-    nama: "Pantai Panjang",
-    lokasi: "Kota Bengkulu",
-    kategori: "pantai",
-    rating: 4.8,
-    deskripsi: "Pantai berpasir putih yang membentang sekitar 7 km, menjadi salah satu pantai terpanjang dan terindah di Bengkulu. Cocok untuk bersantai menikmati sunset dan bermain air.",
-    gambar: "../img/pantai panjang.jpg"
-  },
-  {
-    id: 2,
-    nama: "Benteng Marlborough",
-    lokasi: "Kota Bengkulu",
-    kategori: "sejarah",
-    rating: 4.6,
-    deskripsi: "Benteng peninggalan kolonial Inggris yang dibangun pada abad ke-18. Merupakan salah satu benteng terbesar di Asia Tenggara dan menjadi ikon sejarah Bengkulu.",
-    gambar: "../img/benteng malborough.jpg"
-  },
-  {
-    id: 3,
-    nama: "Bukit Kaba",
-    lokasi: "Kabupaten Rejang Lebong",
-    kategori: "alam",
-    rating: 4.7,
-    deskripsi: "Gunung berapi aktif yang menawarkan pengalaman mendaki yang luar biasa. Di puncaknya terdapat kawah belerang dan pemandangan alam yang menakjubkan di ketinggian 1938 mdpl.",
-    gambar: "../img/bukit kaba.jpg"
-  },
-  {
-    id: 4,
-    nama: "Pantai Tapak Paderi",
-    lokasi: "Kota Bengkulu",
-    kategori: "pantai",
-    rating: 4.5,
-    deskripsi: "Pantai eksotis dengan ombak yang tenang, berpasir kecokelatan, dan panorama samudra Hindia yang memukau. Tempat terbaik untuk menikmati sunrise di Bengkulu.",
-    gambar: "../img/mdland.jpg"
-  },
-  {
-    id: 5,
-    nama: "Taman Nasional Kerinci Seblat",
-    lokasi: "Kabupaten Lebong",
-    kategori: "alam",
-    rating: 4.9,
-    deskripsi: "Kawasan konservasi terluas di Sumatera yang menjadi habitat Bunga Rafflesia Arnoldii, bunga terbesar di dunia. Hutan tropis lebat dengan keanekaragaman hayati yang luar biasa.",
-    gambar: "../img/pusat pelatihan gajah.jpg"
-  },
-  {
-    id: 6,
-    nama: "Rumah Pengasingan Bung Karno",
-    lokasi: "Kota Bengkulu",
-    kategori: "sejarah",
-    rating: 4.7,
-    deskripsi: "Rumah bersejarah tempat Presiden pertama RI, Ir. Soekarno, menjalani masa pengasingan dari tahun 1938–1942. Kini menjadi museum yang menyimpan berbagai koleksi bersejarah.",
-    gambar: "../img/rumah bung karno.jpg"
-  },
-  {
-    id: 7,
-    nama: "Air Terjun Curup",
-    lokasi: "Kabupaten Rejang Lebong",
-    kategori: "alam",
-    rating: 4.6,
-    deskripsi: "Air terjun bertingkat yang dikelilingi hutan hijau yang asri. Aliran airnya yang jernih dan segar menjadi surga tersembunyi bagi pecinta alam di Bengkulu.",
-    gambar: "../img/curug trisakti curup.jpg"
-  },
-  {
-    id: 8,
-    nama: "Pantai Enggano",
-    lokasi: "Pulau Enggano, Bengkulu Utara",
-    kategori: "pantai",
-    rating: 4.9,
-    deskripsi: "Surga tersembunyi di pulau terluar Bengkulu dengan pasir putih bersih, air biru jernih, dan terumbu karang yang masih terjaga. Lokasi snorkeling dan diving terbaik di Bengkulu.",
-    gambar: "../img/pantai batu lubang enggano.jpg"
-  },
-  {
-    id: 9,
-    nama: "Pulau tikus",
-    lokasi: "Kota Bengkulu",
-    kategori: "pantai",
-    rating: 4.9,
-    deskripsi: "Surga tersembunyi di pulau terluar Bengkulu dengan pasir putih bersih, air biru jernih, dan terumbu karang yang masih terjaga. Lokasi snorkeling dan diving terbaik di Bengkulu.",
-    gambar: "../img/pulau tikus.jpg"
-  }
-];
+/* =========================================
+   DATA UTAMA (Diambil dari Database)
+========================================= */
+let dataWisata = []; 
+let favorites = []; 
 
 const heroData = {
   semua: {
@@ -110,39 +32,30 @@ const heroData = {
   }
 };
 
-/* REVIEW DATA  */
-let reviewData = JSON.parse(localStorage.getItem("reviewData")) || {
-  1: [
-    { user: "Aldi", rating: 5, text: "Pantainya bagus banget!" },
-    { user: "Siti", rating: 4, text: "Sunset keren." }
-  ],
-  2: [
-    { user: "Budi", rating: 5, text: "Sejarahnya keren." }
-  ]
-};
-
-/* FITUR LOGIN & FAVORITE STATE */
-let favorites = JSON.parse(localStorage.getItem("userFavorites")) || [];
+/* =========================================
+   AUTH STATE HELPERS
+========================================= */
 function getIsLoggedIn() {
   return localStorage.getItem("currentUser") !== null;
 }
-function getCurrentUserName() {
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  return user ? (user.name || "User") : "Guest";
+
+function getCurrentUser() {
+  return JSON.parse(localStorage.getItem("currentUser"));
 }
 
+/* STATE GLOBAL */
 let selectedRating = 0;
 let reviewLimit = 2;
 let currentReviewRating = 0;
-let isEditing = false;
-let editIndex = null;
-
-/* STATE */
 let currentSearch = "";
 let currentCategory = "semua";
 let currentLocation = "semua";
 let initialized = false;
+let currentOpenId = null;
 
+/* =========================================
+   UI HELPERS
+========================================= */
 function updateHero() {
   const hero = heroData[currentLocation] || heroData.semua;
 
@@ -160,13 +73,8 @@ function updateHero() {
   if (desc) desc.textContent = hero.desc;
 }
 
-/* HELPERS */
-function stars(rating) {
-  return "★★★★★☆☆☆☆☆".slice(5 - rating, 10 - rating);
-}
-
 function generateStars(rating) {
-  const full = Math.floor(rating);
+  const full = Math.floor(Number(rating));
   let out = "";
   for (let i = 1; i <= 5; i++) {
     out += i <= full ? "★" : "☆";
@@ -192,29 +100,83 @@ function updatePillsUI(active) {
   });
 }
 
-/* FAVORITE LOGIC */
-function toggleFavorite(id) {
+/**
+ * TAMBAHAN: Mengambil daftar lokasi unik dari Database
+ */
+async function loadDynamicLocations() {
+  const filterSelect = document.getElementById("locationFilter");
+  if (!filterSelect) return;
+
+  try {
+    const res = await fetch('http://localhost:3000/api/locations');
+    const result = await res.json();
+
+    if (result.status === "success") {
+      // Sisakan opsi "All Locations"
+      filterSelect.innerHTML = '<option value="semua">All Locations</option>';
+      
+      result.data.forEach(loc => {
+        const option = document.createElement("option");
+        option.value = loc;
+        option.textContent = loc;
+        filterSelect.appendChild(option);
+      });
+      
+      // Kembalikan nilai yang sedang dipilih jika masih ada
+      filterSelect.value = currentLocation;
+    }
+  } catch (error) {
+    console.error("Gagal memuat lokasi dinamis:", error);
+  }
+}
+
+/* =========================================
+   FAVORITE SYSTEM (DATABASE)
+========================================= */
+async function toggleFavorite(wisataId) {
   if (!getIsLoggedIn()) {
     alert("Silakan login terlebih dahulu untuk menambahkan ke favorit!");
     return;
   }
-  const index = favorites.indexOf(id);
-  if (index === -1) {
-    favorites.push(id);
-    alert("Berhasil ditambahkan ke favorit!");
-  } else {
-    favorites.splice(index, 1);
-    alert("Dihapus dari favorit.");
+
+  const user = getCurrentUser();
+
+  try {
+    const response = await fetch('http://localhost:3000/api/favorites/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: user.id, wisata_id: wisataId })
+    });
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+      if (result.action === "added") {
+        favorites.push(wisataId);
+        alert(result.message);
+      } else if (result.action === "removed") {
+        favorites = favorites.filter(id => id !== wisataId);
+        alert(result.message);
+      }
+      
+      renderFavoritesPage();
+      
+      const icon = document.querySelector("#favBtn i");
+      if (icon) {
+        icon.classList.toggle("fa-solid"); 
+        icon.classList.toggle("fa-regular");
+      }
+    }
+  } catch (error) {
+    console.error("Gagal toggle favorit:", error);
   }
-  localStorage.setItem("userFavorites", JSON.stringify(favorites));
 }
 
-/* FUNGSI RENDER FAVORITES (LOGIKA BARU) */
 function renderFavoritesPage() {
   const favoritesGrid = document.getElementById("favoritesGrid");
   const emptyFavorites = document.getElementById("emptyFavorites");
 
-  if (!favoritesGrid) return; // Keluar jika bukan halaman favorites.html
+  if (!favoritesGrid) return; 
 
   favoritesGrid.innerHTML = "";
   const favoriteItems = dataWisata.filter(w => favorites.includes(w.id));
@@ -231,19 +193,22 @@ function renderFavoritesPage() {
   favoriteItems.forEach(wisata => {
     const card = document.createElement("div");
     card.className = "wisata-card show";
+    
+    const imgSource = wisata.gambar || wisata.image;
+
     card.innerHTML = `
       <div class="card-img-wrap">
-        <img src="${wisata.gambar}" class="card-img" alt="${wisata.nama}">
+        <img src="${imgSource}" class="card-img" alt="${wisata.nama}">
         <span class="card-badge ${getBadgeClass(wisata.kategori)}">${capitalize(wisata.kategori)}</span>
       </div>
       <div class="card-body">
         <h3 class="card-title">${wisata.nama}</h3>
         <p class="card-location">${wisata.lokasi}</p>
         <div class="card-rating">
-          <span class="stars">${generateStars(wisata.rating)}</span>
-          <span>${wisata.rating}</span>
+          <span class="stars">${generateStars(wisata.rating || 0)}</span>
+          <span>${Number(wisata.rating || 0).toFixed(1)}</span>
         </div>
-        <button class="btn-submit" style="background:#e74c3c; margin-top:10px;" onclick="removeFavorite(${wisata.id})">
+        <button class="btn-submit" style="background:#e74c3c; margin-top:10px;" onclick="toggleFavorite(${wisata.id})">
           <i class="fa-solid fa-trash"></i> Hapus
         </button>
       </div>
@@ -252,39 +217,27 @@ function renderFavoritesPage() {
   });
 }
 
-window.removeFavorite = function(id) {
-  if (confirm("Hapus dari favorit?")) {
-    favorites = favorites.filter(favId => favId !== id);
-    localStorage.setItem("userFavorites", JSON.stringify(favorites));
-    renderFavoritesPage();
-  }
-};
-
-/* FILTER */
+/* =========================================
+   FILTER & RENDER CARD
+========================================= */
 function filterData() {
   return dataWisata.filter(w => {
-    const matchLocation =
-      currentLocation === "semua" || w.lokasi === currentLocation;
-
+    const matchLocation = currentLocation === "semua" || w.lokasi === currentLocation;
     const matchSearch =
       w.nama.toLowerCase().includes(currentSearch.toLowerCase()) ||
       w.lokasi.toLowerCase().includes(currentSearch.toLowerCase());
-
-    const matchCategory =
-      currentCategory === "semua" || w.kategori === currentCategory;
+    const matchCategory = currentCategory === "semua" || w.kategori === currentCategory;
 
     return matchSearch && matchCategory && matchLocation;
   });
 }
 
-/* RENDER */
 function renderCards(data) {
   const grid = document.getElementById("wisataGrid");
   const empty = document.getElementById("emptyState");
   const resultInfo = document.getElementById("resultInfo");
 
   if (!grid) return;
-
   grid.innerHTML = "";
 
   if (data.length === 0) {
@@ -306,9 +259,11 @@ function renderCards(data) {
     card.className = "wisata-card";
     card.style.animationDelay = `${index * 0.07}s`;
 
+    const imgSource = wisata.gambar || wisata.image;
+
     card.innerHTML = `
       <div class="card-img-wrap">
-        <img src="${wisata.gambar}" class="card-img" alt="${wisata.nama}" loading="lazy">
+        <img src="${imgSource}" class="card-img" alt="${wisata.nama}" loading="lazy">
         <span class="card-badge ${getBadgeClass(wisata.kategori)}">
           ${capitalize(wisata.kategori)}
         </span>
@@ -317,8 +272,8 @@ function renderCards(data) {
         <h3 class="card-title">${wisata.nama}</h3>
         <p class="card-location">${wisata.lokasi}</p>
         <div class="card-rating">
-          <span class="stars">${generateStars(wisata.rating)}</span>
-          <span>${wisata.rating}</span>
+          <span class="stars">${generateStars(wisata.rating || 0)}</span>
+          <span>${Number(wisata.rating || 0).toFixed(1)}</span>
         </div>
         <p class="card-desc">${wisata.deskripsi}</p>
         <button class="card-btn" data-id="${wisata.id}">Lihat Detail</button>
@@ -343,25 +298,47 @@ function renderCards(data) {
   });
 }
 
-/* MODAL */
-function openModal(id) {
+/* =========================================
+   MODAL & REVIEW SYSTEM (DATABASE)
+========================================= */
+async function openModal(id) {
   const wisata = dataWisata.find(w => w.id === id);
+  if (!wisata) return; 
+  
   const overlay = document.getElementById("modalOverlay");
   const content = document.getElementById("modalContent");
 
   currentOpenId = id;
-
-  const reviews = reviewData[id] || [];
   const isFav = favorites.includes(id);
   const loggedIn = getIsLoggedIn();
+  const user = getCurrentUser();
 
-  const avg =
-    reviews.length
-      ? (reviews.reduce((a, b) => a + b.rating, 0) / reviews.length).toFixed(1)
+  content.innerHTML = `<h3 style="text-align:center; padding: 50px;">Memuat data...</h3>`;
+  overlay.classList.add("open");
+  document.body.style.overflow = "hidden";
+
+  let reviewsData = [];
+  try {
+    const res = await fetch(`http://localhost:3000/api/reviews/${id}`);
+    const resJson = await res.json();
+    if (resJson.status === "success") {
+      reviewsData = resJson.data;
+    }
+  } catch (error) {
+    console.error("Gagal mengambil ulasan", error);
+  }
+
+  const existingReview = user ? reviewsData.find(r => r.user_id === user.id) : null;
+  currentReviewRating = existingReview ? existingReview.rating : 0;
+
+  const avg = reviewsData.length
+      ? (reviewsData.reduce((a, b) => a + b.rating, 0) / reviewsData.length).toFixed(1)
       : 0;
 
+  const imgSource = wisata.gambar || wisata.image;
+
   content.innerHTML = `
-  <img src="${wisata.gambar}" class="modal-img">
+  <img src="${imgSource}" class="modal-img">
 
   <div class="modal-body">
     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -371,87 +348,90 @@ function openModal(id) {
       </button>
     </div>
     <p class="modal-location">${wisata.lokasi}</p>
-
     <p class="modal-desc">${wisata.deskripsi}</p>
 
     <div class="modal-rating-summary">
       <div class="rating-score">⭐ ${avg}</div>
-      <div class="rating-count">(${reviews.length} reviews)</div>
+      <div class="rating-count">(${reviewsData.length} reviews)</div>
     </div>
 
     <div id="reviewList" class="review-list"></div>
 
-    <button id="viewMoreReviews" class="btn-link">
-      View more
-    </button>
-
+    <button id="viewMoreReviews" class="btn-link">View more</button>
     <hr>
 
     <div id="reviewForm" class="review-form">
-
-      <h4 id="formHeader">Write Review</h4>
-
+      <h4 id="formHeader">${existingReview ? 'Edit Your Review' : 'Write Review'}</h4>
       <div id="starInput" class="star-input">
-        ${[1,2,3,4,5].map(i => `<span data-star="${i}">★</span>`).join("")}
+        ${[1,2,3,4,5].map(i => `<span data-star="${i}" style="color: ${existingReview && i <= existingReview.rating ? 'gold' : 'gray'}">★</span>`).join("")}
       </div>
-
-      <textarea id="reviewText" placeholder="${loggedIn ? 'Tulis review...' : 'Harap login untuk menulis review...'}" ${loggedIn ? '' : 'disabled'}></textarea>
-
-      <button id="submitReview" class="btn-submit">
-        Submit
-      </button>
-
-    </div>
-
+      <textarea id="reviewText" placeholder="${loggedIn ? 'Tulis review...' : 'Harap login untuk menulis review...'}" ${loggedIn ? '' : 'disabled'}>${existingReview ? existingReview.komentar : ''}</textarea>
+      <button id="submitReview" class="btn-submit">${existingReview ? 'Update Review' : 'Submit'}</button>
+      </div>
+      <hr>
+    <div class="penginapan-section">
+      <h4><i class="fa-solid fa-hotel"></i> Rekomendasi Penginapan</h4>
+      <div id="penginapanList"><p>Memuat data penginapan...</p></div>
+      </div>
   </div>
-`;
+  `;
 
-  overlay.classList.add("open");
-  document.body.style.overflow = "hidden";
+  document.getElementById("favBtn").onclick = () => toggleFavorite(id);
 
-  document.getElementById("favBtn").onclick = () => {
-    toggleFavorite(id);
-    if (getIsLoggedIn()) {
-      const icon = document.querySelector("#favBtn i");
-      icon.classList.toggle("fa-solid"); icon.classList.toggle("fa-regular");
+  renderReviewsUI(reviewsData, reviewLimit);
+  setupReviewLogic(id);
+  // Ambil rekomendasi penginapan
+const penginapanContainer = document.getElementById("penginapanList");
+if (penginapanContainer) {
+  try {
+    const resPenginapan = await fetch(`http://localhost:3000/api/penginapan/rekomendasi?lokasi=${encodeURIComponent(wisata.lokasi)}`);
+    const dataPenginapan = await resPenginapan.json();
+    if (dataPenginapan.status === "success" && dataPenginapan.data.length > 0) {
+      penginapanContainer.innerHTML = dataPenginapan.data.map(p => `
+        <div class="review-item" style="display: flex; align-items: center; gap: 10px;">
+          <img src="${p.gambar}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px;" onerror="this.src='../img/default-hotel.jpg'">
+          <div style="flex: 1;">
+            <strong>${p.nama}</strong><br>
+            <small>${p.alamat || ''}</small><br>
+            <span style="color: var(--moss); font-weight: 600;">Rp ${Number(p.harga).toLocaleString('id-ID')} / malam</span>
+          </div>
+        </div>
+      `).join("");
+    } else {
+      penginapanContainer.innerHTML = "<p style='color: gray; font-size: 0.9rem;'>Belum ada rekomendasi penginapan untuk lokasi ini.</p>";
     }
-  };
-
-  renderReviews(id, reviewLimit);
-  setupReview(id);
+  } catch (error) {
+    penginapanContainer.innerHTML = "<p style='color: red;'>Gagal memuat data penginapan.</p>";
+  }
+}
 }
 
-/* REVIEW RENDER */
-function renderReviews(id, limit = 2) {
+function renderReviewsUI(reviews, limit = 2) {
   const list = document.getElementById("reviewList");
-  const reviews = reviewData[id] || [];
-  const currentUser = getCurrentUserName();
+  if (!list) return;
 
-  list.innerHTML = reviews.slice(0, limit).map((r, idx) => `
+  if (reviews.length === 0) {
+    list.innerHTML = "<p style='color:gray; font-size:0.9rem;'>Belum ada ulasan untuk tempat ini.</p>";
+    return;
+  }
+
+  list.innerHTML = reviews.slice(0, limit).map(r => `
     <div class="review-item">
       <div style="display: flex; justify-content: space-between;">
-        <div class="review-user"><strong>${r.user}</strong></div>
-        ${(getIsLoggedIn() && r.user === currentUser) ? `
-          <div>
-            <button onclick="editReview(${id}, ${idx})" class="btn-link" style="color:var(--moss); font-size:0.8rem; margin-right:8px;">Edit</button>
-            <button onclick="deleteReview(${id}, ${idx})" class="btn-link" style="color:#e74c3c; font-size:0.8rem;">Hapus</button>
-          </div>
-        ` : ""}
+        <div class="review-user"><strong>${r.user_name}</strong></div>
       </div>
       <div class="stars">${generateStars(r.rating)}</div>
-      <div class="review-text">${r.text}</div>
+      <div class="review-text">${r.komentar}</div>
     </div>
   `).join("");
 }
 
-/* REVIEW SYSTEM */
-function setupReview(id) {
+function setupReviewLogic(wisataId) {
   const stars = document.querySelectorAll("#starInput span");
   const text = document.getElementById("reviewText");
   const btn = document.getElementById("submitReview");
   const viewMore = document.getElementById("viewMoreReviews");
 
-  /* star click */
   stars.forEach(s => {
     s.onclick = () => {
       currentReviewRating = parseInt(s.dataset.star);
@@ -462,80 +442,93 @@ function setupReview(id) {
     };
   });
 
-  /* submit review */
-  btn.onclick = () => {
+  btn.onclick = async () => {
     if (!getIsLoggedIn()) {
       alert("Kamu harus login dulu!");
       return;
     }
 
     if (!currentReviewRating || !text.value) {
-      alert("Isi rating & review!");
+      alert("Harap isi rating bintang dan teks ulasannya!");
       return;
     }
 
-    if (isEditing) {
-      reviewData[id][editIndex] = { user: getCurrentUserName(), rating: currentReviewRating, text: text.value };
-      isEditing = false; editIndex = null; btn.textContent = "Submit";
-      document.getElementById("formHeader").textContent = "Write Review";
-    } else {
-      if (!reviewData[id]) reviewData[id] = [];
-      reviewData[id].unshift({
-        user: getCurrentUserName(),
-        rating: currentReviewRating,
-        text: text.value
+    const payload = {
+      wisata_id: wisataId,
+      user_id: getCurrentUser().id,
+      rating: currentReviewRating,
+      komentar: text.value
+    };
+
+    try {
+      const res = await fetch('http://localhost:3000/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
-    }
+      const result = await res.json();
 
-    localStorage.setItem("reviewData", JSON.stringify(reviewData));
-    text.value = "";
-    currentReviewRating = 0;
-    renderReviews(id, reviewLimit);
+      if (result.status === "success") {
+        alert(result.message);
+        openModal(wisataId); 
+      } else {
+        alert("Gagal mengirim ulasan.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Terjadi kesalahan server saat menyimpan ulasan.");
+    }
   };
 
-  /* view more */
-  viewMore.onclick = () => {
-    if (!getIsLoggedIn()) {
-      alert("Login dulu untuk lihat lebih banyak review!");
-      return;
-    }
-
-    reviewLimit += 5;
-    renderReviews(id, reviewLimit);
-  };
-}
-
-/* GLOBAL ACTIONS FOR REVIEWS */
-window.editReview = function(wisataId, idx) {
-  const r = reviewData[wisataId][idx];
-  const text = document.getElementById("reviewText");
-  const btn = document.getElementById("submitReview");
-  text.value = r.text; currentReviewRating = r.rating;
-  isEditing = true; editIndex = idx; btn.textContent = "Update Review";
-  document.getElementById("formHeader").textContent = "Edit Your Review";
-  document.getElementById("reviewForm").scrollIntoView({ behavior: "smooth" });
-};
-
-window.deleteReview = function(wisataId, idx) {
-  if (confirm("Hapus ulasan ini?")) {
-    reviewData[wisataId].splice(idx, 1);
-    localStorage.setItem("reviewData", JSON.stringify(reviewData));
-    renderReviews(wisataId, reviewLimit);
+  if (viewMore) {
+    viewMore.onclick = () => {
+      reviewLimit += 5;
+      openModal(wisataId); 
+    };
   }
-};
+}
 
 function closeModal() {
-  document.getElementById("modalOverlay").classList.remove("open");
-  document.body.style.overflow = "";
+  const overlay = document.getElementById("modalOverlay");
+  if(overlay) {
+    overlay.classList.remove("open");
+    document.body.style.overflow = "";
+  }
 }
 
-/* INIT */
-document.addEventListener("DOMContentLoaded", () => {
+/* =========================================
+   INITIALIZATION (FETCH DATA SAAT LOAD)
+========================================= */
+document.addEventListener("DOMContentLoaded", async () => {
   if (initialized) return;
   initialized = true;
 
+  try {
+    // 1. Ambil data wisata dari API Node.js
+    const resWisata = await fetch('http://localhost:3000/api/wisata');
+    const resultWisata = await resWisata.json();
+    if (resultWisata.status === "success") {
+      dataWisata = resultWisata.data;
+    }
+
+    // 2. Ambil lokasi dinamis (TAMBAHAN BARU)
+    await loadDynamicLocations();
+
+    // 3. Jika user login, ambil data daftar ID favorit miliknya
+    const user = getCurrentUser();
+    if (user) {
+      const resFav = await fetch(`http://localhost:3000/api/favorites/${user.id}`);
+      const resultFav = await resFav.json();
+      if (resultFav.status === "success") {
+        favorites = resultFav.data;
+      }
+    }
+  } catch (error) {
+    console.error("Gagal memuat data awal dari server:", error);
+  }
+
   renderCards(dataWisata);
-  renderFavoritesPage(); // Memanggil render untuk halaman favorites
+  renderFavoritesPage();
 
   const searchInput = document.getElementById("searchInput");
   const searchClear = document.getElementById("searchClear");
@@ -549,26 +542,26 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   searchClear?.addEventListener("click", () => {
-    searchInput.value = "";
+    if (searchInput) searchInput.value = "";
     currentSearch = "";
-    searchClear.style.display = "none";
+    if (searchClear) searchClear.style.display = "none";
     renderCards(filterData());
   });
 
-locationFilter?.addEventListener("change", function () {
-  currentLocation = this.value;
-  renderCards(filterData());
-  updateHero();
-});
+  locationFilter?.addEventListener("change", function () {
+    currentLocation = this.value;
+    renderCards(filterData());
+    updateHero();
+  });
 
   btnReset?.addEventListener("click", () => {
     currentSearch = "";
     currentCategory = "semua";
     currentLocation = "semua";
 
-    searchInput.value = "";
-    locationFilter.value = "semua";
-    searchClear.style.display = "none";
+    if (searchInput) searchInput.value = "";
+    if (locationFilter) locationFilter.value = "semua";
+    if (searchClear) searchClear.style.display = "none";
 
     updatePillsUI("semua");
     renderCards(filterData());
@@ -583,25 +576,27 @@ locationFilter?.addEventListener("change", function () {
     });
   });
 
-    document.querySelectorAll(".card-btn").forEach(btn => {
-    btn.onclick = () => openModal(parseInt(btn.dataset.id));
-  });
+  const modalClose = document.getElementById("modalClose");
+  if(modalClose) modalClose.onclick = closeModal;
 
- document.getElementById("modalClose").onclick = closeModal;
-  document.getElementById("modalOverlay").onclick = (e) => {
-    if (e.target.id === "modalOverlay") closeModal();
-  };
+  const modalOverlay = document.getElementById("modalOverlay");
+  if(modalOverlay) {
+    modalOverlay.onclick = (e) => {
+      if (e.target.id === "modalOverlay") closeModal();
+    };
+  }
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
   });
 });
 
+/* =========================================
+   LAIN-LAIN (BLOG SEARCH & ANIMATIONS)
+========================================= */
 const blogSearch = document.getElementById("blogSearch");
-
 blogSearch?.addEventListener("input", function () {
   const keyword = this.value.toLowerCase();
-
   document.querySelectorAll(".blog-card").forEach(card => {
     const title = card.querySelector("h3").textContent.toLowerCase();
     const desc = card.querySelector("p").textContent.toLowerCase();
@@ -623,13 +618,90 @@ const observer = new IntersectionObserver(entries => {
 }, { threshold: 0.2 });
 
 document.querySelectorAll(".blog-card").forEach(card => {
-  card.classList.add("fade-in");
+  // Hanya tambah class jika belum punya class fade-in
+  // (mencegah error pada halaman yang tidak pakai animasi ini)
+  if(!card.classList.contains("fade-in")) {
+     card.classList.add("fade-in");
+  }
   observer.observe(card);
 });
 
-/* NAV ACTIVE */
 window.addEventListener("scroll", () => {
   const navbar = document.getElementById("navbar");
   if (!navbar) return;
   navbar.classList.toggle("scrolled", window.scrollY > 60);
+});
+
+/* ==========================================
+   PUBLIC BLOGS DATA FETCHING
+========================================== */
+document.addEventListener("DOMContentLoaded", () => {
+    const featuredContainer = document.getElementById("featuredContainer");
+    const listContainer = document.getElementById("listContainer");
+
+    // Hanya jalankan script ini jika berada di halaman Blogs
+    if (featuredContainer && listContainer) {
+        loadPublicBlogs();
+    }
+
+    async function loadPublicBlogs() {
+        try {
+            const res = await fetch('http://localhost:3000/api/blogs');
+            const result = await res.json();
+
+            if (result.status === "success") {
+                const blogs = result.data;
+
+                if (blogs.length === 0) {
+                    featuredContainer.innerHTML = "<p style='text-align: center;'>Belum ada artikel yang dipublikasikan.</p>";
+                    return;
+                }
+
+                // 1. Render Featured Blog (Ambil data indeks ke-0 / Paling baru)
+                const featured = blogs[0];
+                const featuredContent = featured.content ? featured.content.substring(0, 150) + "..." : "";
+                
+                featuredContainer.innerHTML = `
+                    <div class="featured-card">
+                        <img src="${featured.image || 'img/default-image.jpg'}" alt="featured">
+                        <div class="featured-content">
+                            <span class="blog-tag">${featured.category || 'Featured'}</span>
+                            <h2>${featured.title}</h2>
+                            <p>${featuredContent}</p>
+                            <a href="blog-detail.html?id=${featured.id}"><button class="btn-read">Read More</button></a>
+                        </div>
+                    </div>
+                `;
+
+                // 2. Render Blog List (Ambil data sisanya: indeks ke-1 sampai habis)
+                listContainer.innerHTML = "";
+                const restBlogs = blogs.slice(1);
+                
+                restBlogs.forEach(b => {
+                    const shortContent = b.content ? b.content.substring(0, 80) + "..." : "";
+                    
+                    // Format tanggal sederhana, pakai kategori jika tanggal tidak terbaca
+                    const dateStr = b.created_at 
+                        ? new Date(b.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) 
+                        : b.category;
+
+                    // PERBAIKAN: Hapus class "fade-in" di baris bawah ini
+                    listContainer.innerHTML += `
+                        <div class="blog-card"> 
+                            <img src="${b.image || 'img/default-image.jpg'}">
+                            <div class="blog-content">
+                                <span class="blog-date" style="text-transform: capitalize;">${dateStr}</span>
+                                <h3>${b.title}</h3>
+                                <p>${shortContent}</p>
+                                <a href="blog-detail.html?id=${b.id}" class="read-more">Read More →</a>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        } catch (error) {
+            console.error("Gagal memuat artikel blog:", error);
+            featuredContainer.innerHTML = "<p style='text-align: center;'>Gagal terhubung ke server.</p>";
+        }
+    }
 });

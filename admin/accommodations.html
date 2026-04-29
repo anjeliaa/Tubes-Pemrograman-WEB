@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Kelola Penginapan - Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div>
+      <h2>Admin Panel</h2>
+      <ul>
+        <li><a href="dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+        <li><a href="destinations.html"><i class="fa-solid fa-map"></i> Destinations</a></li>
+        <li><a href="blogs.html"><i class="fa-solid fa-pen"></i> Blogs</a></li>
+        <li><a href="users.html"><i class="fa-solid fa-users"></i> Users</a></li>
+        <li class="active"><a href="accommodations.html"><i class="fa-solid fa-hotel"></i> Penginapan</a></li>
+      </ul>
+    </div>
+    <button id="logoutBtn" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-header">
+      <h1>Kelola Penginapan</h1>
+      <p>Tambah, edit, dan hapus data penginapan</p>
+    </div>
+
+    <form id="formPenginapan" class="admin-form">
+      <input type="text" id="nama" placeholder="Nama Penginapan" required>
+      <input type="text" id="lokasi" placeholder="Lokasi (Kota/Kabupaten)" required>
+      <input type="text" id="alamat" placeholder="Alamat lengkap">
+      <input type="number" id="harga" placeholder="Harga per malam (Rp)" required>
+      <input type="file" id="image" accept="image/*">
+      <img id="previewImg" src="" alt="Preview Gambar">
+      <button type="submit">Simpan Penginapan</button>
+    </form>
+
+    <div class="admin-list" id="penginapanList"></div>
+  </main>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>

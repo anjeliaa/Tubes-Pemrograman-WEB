@@ -2141,6 +2141,61 @@ textarea {
   background: var(--moss);
   color: white;
   font-weight: 600;
+}.admin-sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, var(--forest), #123a2d);
+  color: white;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 999; /* TAMBAHAN: Memaksa sidebar selalu di paling depan */
+}
+
+.admin-sidebar h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+}
+
+/* MENU */
+.admin-sidebar ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-sidebar ul li {
+  list-style: none;
+}
+
+.admin-sidebar ul li a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  color: rgba(255,255,255,.85);
+  font-size: .9rem;
+  transition: .25s;
+}
+
+.admin-sidebar ul li a i {
+  width: 18px;
+}
+
+.admin-sidebar ul li:hover a {
+  background: rgba(255,255,255,.12);
+  color: #fff;
+}
+
+.admin-sidebar ul li.active a {
+  background: var(--moss);
+  color: white;
+  font-weight: 600;
 }
 
 /* LOGOUT */
@@ -2492,12 +2547,14 @@ textarea {
     flex-direction: column;
   }
 
+/* PERBAIKAN: Dibungkus media query agar hanya aktif di layar HP, tidak merusak tampilan laptop */
+@media (max-width: 768px) {
   .admin-sidebar {
     width: 100%;
     height: auto;
     position: relative;
   }
-
+}
   .admin-stats {
     grid-template-columns: 1fr 1fr;
   }
@@ -2577,4 +2634,26 @@ textarea {
   .modal-img {
     height: 180px;
   }
+  /* Rekomendasi penginapan di modal */
+.penginapan-section {
+  margin-top: 10px;
+}
+.penginapan-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--forest);
+  margin-bottom: 10px;
+}
+.penginapan-section .review-item {
+  background: var(--cream);
+  border: 1px solid var(--sand);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  transition: 0.2s;
+}
+.penginapan-section .review-item:hover {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
 }

@@ -1,69 +1,74 @@
-let users = JSON.parse(localStorage.getItem("users")) || [];
 let currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
-if (!users.find(u => u.role === "admin")) {
-  users.push({
-    name: "Admin",
-    email: "admin@gmail.com",
-    password: "admin123",
-    role: "admin",
-    avatar: "img/default-avatar.png",
-    isProfileComplete: true
-  });
+// Catatan: Pembuatan Admin statis dan let users = [] sudah Dihapus 
+// karena data sekarang diambil dan dicek langsung ke database MySQL.
 
-  localStorage.setItem("users", JSON.stringify(users));
-}
-
-document.getElementById("registerForm")?.addEventListener("submit", (e) => {
+document.getElementById("registerForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const name = document.getElementById("regName").value.trim();
   const email = document.getElementById("regEmail").value.trim();
   const password = document.getElementById("regPassword").value.trim();
 
-  const exist = users.find(u => u.email === email);
-  if (exist) {
-    alert("Email sudah terdaftar!");
-    return;
+  try {
+    // Memanggil API Register di Node.js
+    const response = await fetch('http://localhost:3000/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+      alert("Register berhasil! Silakan login.");
+      window.location.href = "login.html";
+    } else {
+      // Menampilkan pesan error dari backend (misal: Email sudah terdaftar)
+      alert(result.message);
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Terjadi kesalahan koneksi ke server saat mendaftar.");
   }
-
-  const newUser = {
-    name,
-    email,
-    password,
-    role: "user",
-    avatar: "img/default-avatar.png",
-    bio: "",
-    isProfileComplete: false
-  };
-
-  users.push(newUser);
-  localStorage.setItem("users", JSON.stringify(users));
-
-  alert("Register berhasil! Silakan login.");
-  window.location.href = "login.html";
 });
 
-document.getElementById("loginForm")?.addEventListener("submit", (e) => {
+document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value.trim();
 
-  const user = users.find(
-    u => u.email === email && u.password === password
-  );
+  try {
+    // Memanggil API Login di Node.js
+    const response = await fetch('http://localhost:3000/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
 
-  if (!user) {
-    alert("Email atau password salah!");
-    return;
+    const result = await response.json();
+
+    if (result.status === "success") {
+      currentUser = result.user;
+      
+      // Simpan session user yang sedang login ke localStorage
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+      // Redirect berdasarkan role yang didapat dari database
+      if (currentUser.role === "admin") {
+        window.location.href = "admin/dashboard.html";
+      } else {
+        window.location.href = "user/dashboard.html";
+      }
+    } else {
+      // Menampilkan pesan error (misal: Password salah / Email tidak ditemukan)
+      alert(result.message);
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Terjadi kesalahan koneksi ke server saat login.");
   }
-
-  currentUser = user;
-
-  localStorage.setItem("currentUser", JSON.stringify(currentUser));
-
-  window.location.href = "user/dashboard.html";
 });
 
 function logout() {
