@@ -132,7 +132,7 @@ if (path.includes("destinations")) {
   }
 
   /**
-   * TAMBAHAN: Mengambil daftar lokasi unik untuk saran (datalist)
+   * Mengambil daftar lokasi unik untuk saran (datalist)
    */
   async function refreshLocationSuggestions() {
     try {
@@ -192,19 +192,35 @@ if (path.includes("destinations")) {
         </div>
         <div class="admin-actions">
           <button class="btn-edit" data-index="${index}">Edit</button>
-          <button class="btn-delete" data-index="${index}">Hapus</button>
+          <!-- PERBAIKAN: Gunakan data-id dari database -->
+          <button class="btn-delete" data-id="${item.id}">Hapus</button>
         </div>
       `;
       list.appendChild(el);
     });
 
-    /* DELETE (Placeholder) */
+    /* DELETE (PERBAIKAN: TERHUBUNG KE API DATABASE) */
     document.querySelectorAll(".btn-delete").forEach(btn => {
-      btn.addEventListener("click", function () {
-        const i = this.dataset.index;
-        if (confirm("Yakin hapus data ini? (Note: Belum tersambung ke API Delete)")) {
-          wisata.splice(i, 1);
-          render();
+      btn.addEventListener("click", async function () {
+        const idWisata = this.dataset.id; // Ambil ID asli dari database
+
+        if (confirm("Yakin ingin menghapus data wisata ini secara permanen?")) {
+          try {
+            const res = await fetch(`http://localhost:3000/api/wisata/${idWisata}`, { 
+              method: 'DELETE' 
+            });
+            const result = await res.json();
+            
+            if (result.status === "success") {
+              alert(result.message);
+              fetchWisata(); // Refresh daftar dari database
+            } else {
+              alert("Gagal menghapus: " + result.message);
+            }
+          } catch (error) {
+            console.error(error);
+            alert("Terjadi kesalahan saat menghidupungi server.");
+          }
         }
       });
     });

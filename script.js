@@ -367,11 +367,20 @@ async function openModal(id) {
 
     <div id="reviewForm" class="review-form">
       <h4 id="formHeader">${existingReview ? 'Edit Your Review' : 'Write Review'}</h4>
-      <div id="starInput" class="star-input">
-        ${[1,2,3,4,5].map(i => `<span data-star="${i}" style="color: ${existingReview && i <= existingReview.rating ? 'gold' : 'gray'}">★</span>`).join("")}
+      
+      <!-- JURUS PAMUNGKAS: Bintang pakai inline onclick window.setRating -->
+      <div id="starInput" class="star-input" style="font-size: 1.8rem; user-select: none;">
+        ${[1,2,3,4,5].map(i => `<span onclick="window.setRating(${i})" style="color: ${existingReview && i <= existingReview.rating ? 'gold' : '#ccc'}; cursor: pointer; display: inline-block; padding-right: 5px; transition: color 0.2s;">★</span>`).join("")}
       </div>
+
       <textarea id="reviewText" placeholder="${loggedIn ? 'Tulis review...' : 'Harap login untuk menulis review...'}" ${loggedIn ? '' : 'disabled'}>${existingReview ? existingReview.komentar : ''}</textarea>
-      <button id="submitReview" class="btn-submit">${existingReview ? 'Update Review' : 'Submit'}</button>
+      
+      <!-- JURUS PAMUNGKAS: Tombol submit pakai inline onclick window.submitReview -->
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button id="submitReviewBtn" onclick="window.submitReview(${id})" class="btn-submit" style="flex: 1; cursor: pointer;">${existingReview ? 'Update Review' : 'Submit'}</button>
+          ${existingReview ? `<button type="button" onclick="window.deleteMyReview(${existingReview.id}, ${id})" class="btn-submit" style="background: #e74c3c; flex: 1; cursor: pointer;"><i class="fa-solid fa-trash"></i> Hapus</button>` : ''}
+      </div>
+      
       </div>
       <hr>
     <div class="penginapan-section">
@@ -383,8 +392,19 @@ async function openModal(id) {
 
   document.getElementById("favBtn").onclick = () => toggleFavorite(id);
 
-  renderReviewsUI(reviewsData, reviewLimit);
-  setupReviewLogic(id);
+  // Pastikan renderReviewsUI ada di kode kamu yang lain
+  if(typeof renderReviewsUI === "function") {
+      renderReviewsUI(reviewsData, reviewLimit);
+  }
+
+  // Tombol view more
+  const viewMore = document.getElementById("viewMoreReviews");
+  if (viewMore) {
+    viewMore.onclick = () => {
+      reviewLimit += 5;
+      openModal(id); 
+    };
+  }
   
   // Ambil rekomendasi penginapan
   const penginapanContainer = document.getElementById("penginapanList");
@@ -412,50 +432,30 @@ async function openModal(id) {
   }
 }
 
-function renderReviewsUI(reviews, limit = 2) {
-  const list = document.getElementById("reviewList");
-  if (!list) return;
+// FUNGSI GLOBAL: Menangkap klik bintang dengan akurasi 100%
+window.setRating = function(rating) {
+    currentReviewRating = rating;
+    const stars = document.querySelectorAll("#starInput span");
+    stars.forEach((s, index) => {
+        s.style.color = index < rating ? "gold" : "#ccc";
+    });
+};
 
-  if (reviews.length === 0) {
-    list.innerHTML = "<p style='color:gray; font-size:0.9rem;'>Belum ada ulasan untuk tempat ini.</p>";
-    return;
-  }
-
-  list.innerHTML = reviews.slice(0, limit).map(r => `
-    <div class="review-item">
-      <div style="display: flex; justify-content: space-between;">
-        <div class="review-user"><strong>${r.user_name}</strong></div>
-      </div>
-      <div class="stars">${generateStars(r.rating)}</div>
-      <div class="review-text">${r.komentar}</div>
-    </div>
-  `).join("");
-}
-
-function setupReviewLogic(wisataId) {
-  const stars = document.querySelectorAll("#starInput span");
-  const text = document.getElementById("reviewText");
-  const btn = document.getElementById("submitReview");
-  const viewMore = document.getElementById("viewMoreReviews");
-
-  stars.forEach(s => {
-    s.onclick = () => {
-      currentReviewRating = parseInt(s.dataset.star);
-      stars.forEach(x => x.style.color = "gray");
-      for (let i = 0; i < currentReviewRating; i++) {
-        stars[i].style.color = "gold";
-      }
-    };
-  });
-
-  btn.onclick = async () => {
+// FUNGSI GLOBAL: Menangkap klik submit dengan akurasi 100%
+window.submitReview = async function(wisataId) {
     if (!getIsLoggedIn()) {
       alert("Kamu harus login dulu!");
       return;
     }
 
-    if (!currentReviewRating || !text.value) {
-      alert("Harap isi rating bintang dan teks ulasannya!");
+    if (currentReviewRating === 0) {
+      alert("Ups! Kamu belum memilih rating bintang. Silakan klik bintangnya dulu ya.");
+      return;
+    }
+
+    const textInput = document.getElementById("reviewText");
+    if (!textInput || !textInput.value.trim()) {
+      alert("Ups! Teks ulasan tidak boleh kosong.");
       return;
     }
 
@@ -463,8 +463,13 @@ function setupReviewLogic(wisataId) {
       wisata_id: wisataId,
       user_id: getCurrentUser().id,
       rating: currentReviewRating,
-      komentar: text.value
+      komentar: textInput.value
     };
+
+    const btn = document.getElementById("submitReviewBtn");
+    const originalText = btn.innerText;
+    btn.innerText = "Mengirim...";
+    btn.disabled = true;
 
     try {
       const res = await fetch('http://localhost:3000/api/reviews', {
@@ -476,23 +481,41 @@ function setupReviewLogic(wisataId) {
 
       if (result.status === "success") {
         alert(result.message);
-        openModal(wisataId); 
+        openModal(wisataId); // Refresh tampilan layar otomatis
       } else {
         alert("Gagal mengirim ulasan.");
+        btn.innerText = originalText;
+        btn.disabled = false;
       }
     } catch (error) {
       console.error(error);
       alert("Terjadi kesalahan server saat menyimpan ulasan.");
+      btn.innerText = "Submit";
+      btn.disabled = false;
     }
-  };
+};
 
-  if (viewMore) {
-    viewMore.onclick = () => {
-      reviewLimit += 5;
-      openModal(wisataId); 
-    };
-  }
-}
+// FUNGSI GLOBAL: Hapus Review
+window.deleteMyReview = async function(reviewId, wisataId) {
+    if (confirm("Apakah kamu yakin ingin menghapus ulasan kamu?")) {
+        try {
+            const res = await fetch(`http://localhost:3000/api/admin/reviews/${reviewId}`, {
+                method: 'DELETE'
+            });
+            const result = await res.json();
+            
+            if (result.status === "success") {
+                alert("Ulasan berhasil dihapus!");
+                openModal(wisataId); 
+            } else {
+                alert("Gagal menghapus ulasan: " + result.message);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Terjadi kesalahan server saat mencoba menghapus ulasan.");
+        }
+    }
+};
 
 function closeModal() {
   const overlay = document.getElementById("modalOverlay");
