@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
+const path = require('path');
 
 const app = express();
 const PORT = 3000;
@@ -10,6 +11,13 @@ const PORT = 3000;
 app.use(cors()); 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+app.use(express.static(path.join(__dirname, '..')));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
+
 
 // Koneksi Database
 const pool = mysql.createPool({
@@ -228,7 +236,7 @@ app.get('/api/blogs', async (req, res) => {
     }
 });
 
-// 1.5 Ambil detail 1 blog berdasarkan ID
+// 1.5 Ambil detail 1 blog berdasarkan ID (BARU DITAMBAHKAN)
 app.get('/api/blogs/:id', async (req, res) => {
     try {
         const [rows] = await pool.execute('SELECT * FROM blogs WHERE id = ?', [req.params.id]);
@@ -373,7 +381,7 @@ app.get('/api/admin/users', async (req, res) => {
     }
 });
 
-// API Hapus User
+// API Hapus User (BARU)
 app.delete('/api/admin/users/:id', async (req, res) => {
     try {
         const userId = req.params.id;
@@ -385,7 +393,7 @@ app.delete('/api/admin/users/:id', async (req, res) => {
     }
 });
 
-// API Ban / Unban User
+// API Ban / Unban User (BARU)
 app.put('/api/admin/users/:id/ban', async (req, res) => {
     try {
         const userId = req.params.id;
@@ -416,7 +424,7 @@ app.get('/api/admin/reviews', async (req, res) => {
     }
 });
 
-// API Hapus Review
+// API Hapus Review (BARU)
 app.delete('/api/admin/reviews/:id', async (req, res) => {
     try {
         const reviewId = req.params.id;
@@ -461,6 +469,7 @@ app.get('/api/penginapan/rekomendasi', async (req, res) => {
 
 // POST (tambah penginapan) – untuk admin
 app.post('/api/penginapan', async (req, res) => {
+  // PERBAIKAN: Menambahkan 'image' agar bisa diterima dari script frontend admin.js
   const { nama, lokasi, alamat, harga, gambar, image } = req.body;
   const imgToSave = gambar || image; // Mengakomodasi "gambar" atau "image"
 
@@ -478,6 +487,7 @@ app.post('/api/penginapan', async (req, res) => {
 
 // PUT (edit penginapan)
 app.put('/api/penginapan/:id', async (req, res) => {
+  // PERBAIKAN: Menambahkan 'image' agar sinkron dengan update frontend
   const { nama, lokasi, alamat, harga, gambar, image } = req.body;
   const imgToSave = gambar || image;
 
@@ -524,7 +534,7 @@ app.post('/api/trips', async (req, res) => {
     }
 });
 
-// 2. Ambil daftar riwayat user
+// 2. Ambil daftar riwayat user (PERBAIKAN: Menambahkan t.bukti_foto pada query)
 app.get('/api/trips/:userId', async (req, res) => {
     try {
         const query = `

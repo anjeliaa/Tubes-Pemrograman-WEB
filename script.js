@@ -1,6 +1,3 @@
-/* =========================================
-   DATA UTAMA (Diambil dari Database)
-========================================= */
 let dataWisata = []; 
 let favorites = []; 
 
@@ -15,7 +12,7 @@ const heroData = {
     desc: "Discover iconic places like Pantai Panjang, Pulau Tikus, and historical landmarks in the heart of Bengkulu City.",
     image: "../img/pulau tikus.jpg"
   },
-  "Kabupaten Rejang Lebong": {
+  "Curup, Rejang Lebong": {
     title: "Rejang Lebong Nature Escape",
     desc: "Explore mountains, waterfalls, and cool highland scenery in Rejang Lebong.",
     image: "../img/curug trisakti curup.jpg"
@@ -276,186 +273,224 @@ function renderCards(data) {
           <span>${Number(wisata.rating || 0).toFixed(1)}</span>
         </div>
         <p class="card-desc">${wisata.deskripsi}</p>
-        <button class="card-btn" data-id="${wisata.id}">Lihat Detail</button>
+        <a href="detail.html?id=${wisata.id}" class="card-btn">Lihat Detail</a>
       </div>
     `;
 
     grid.appendChild(card);
   });
-
-  grid.querySelectorAll(".card-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      openModal(parseInt(btn.dataset.id));
-    });
-  });
-
-  grid.querySelectorAll(".wisata-card").forEach(card => {
-    card.addEventListener("click", () => {
-      const btn = card.querySelector(".card-btn");
-      if (btn) openModal(parseInt(btn.dataset.id));
-    });
-  });
 }
 
 /* =========================================
-   MODAL & REVIEW SYSTEM (DATABASE)
+   Detail wisata
 ========================================= */
-async function openModal(id) {
-  const wisata = dataWisata.find(w => w.id === id);
-  if (!wisata) return; 
-  
-  const overlay = document.getElementById("modalOverlay");
-  const content = document.getElementById("modalContent");
+async function loadDetailPage() {
+  if (!window.location.pathname.includes("detail.html")) return;
 
-  currentOpenId = id;
-  const isFav = favorites.includes(id);
-  const loggedIn = getIsLoggedIn();
-  const user = getCurrentUser();
+  const params = new URLSearchParams(window.location.search);
+  const id = parseInt(params.get("id"));
 
-  content.innerHTML = `<h3 style="text-align:center; padding: 50px;">Memuat data...</h3>`;
-  overlay.classList.add("open");
-  document.body.style.overflow = "hidden";
+  if (!id) return;
 
-  let reviewsData = [];
   try {
-    const res = await fetch(`http://localhost:3000/api/reviews/${id}`);
-    const resJson = await res.json();
-    if (resJson.status === "success") {
-      reviewsData = resJson.data;
-    }
-  } catch (error) {
-    console.error("Gagal mengambil ulasan", error);
-  }
+    const res = await fetch('http://localhost:3000/api/wisata');
+    const result = await res.json();
+    if (result.status !== "success") return;
 
-  const existingReview = user ? reviewsData.find(r => r.user_id === user.id) : null;
-  currentReviewRating = existingReview ? existingReview.rating : 0;
+    const wisata = result.data.find(w => w.id === id);
+    if (!wisata) return;
 
-  const avg = reviewsData.length
+    const user = getCurrentUser();
+    const isFav = favorites.includes(id);
+
+    const container = document.getElementById("detailContainer");
+
+    // ===== FETCH REVIEWS =====
+    let reviewsData = [];
+    try {
+      const resRev = await fetch(`http://localhost:3000/api/reviews/${id}`);
+      const revJson = await resRev.json();
+      if (revJson.status === "success") {
+        reviewsData = revJson.data;
+      }
+    } catch {}
+
+    const avg = reviewsData.length
       ? (reviewsData.reduce((a, b) => a + b.rating, 0) / reviewsData.length).toFixed(1)
       : 0;
 
-  const imgSource = wisata.gambar || wisata.image;
+    const existingReview = user ? reviewsData.find(r => r.user_id === user.id) : null;
+    currentReviewRating = existingReview ? existingReview.rating : 0;
 
-  content.innerHTML = `
-  <img src="${imgSource}" class="modal-img">
+    const imgSource = wisata.gambar || wisata.image;
 
-  <div class="modal-body">
-    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-      <h2 style="flex: 1;">${wisata.nama}</h2>
-      
-      <button onclick="markAsVisited(${id})" class="btn-visited" style="background: #2e7d32; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">
-        <i class="fa-solid fa-check-square"></i> Pernah ke Sini
-      </button>
+// ===== RENDER =====
+container.innerHTML = `
+  <div class="detail-page">
 
-      <button id="favBtn" style="background:none; border:none; cursor:pointer; font-size:1.5rem; margin-left: 5px;">
-        <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart" style="color: #e74c3c;"></i>
-      </button>
-    </div>
-    <p class="modal-location">${wisata.lokasi}</p>
-    <p class="modal-desc">${wisata.deskripsi}</p>
+    <img src="${imgSource}" class="detail-img">
 
-    <div class="modal-rating-summary">
-      <div class="rating-score">⭐ ${avg}</div>
-      <div class="rating-count">(${reviewsData.length} reviews)</div>
-    </div>
+    <div class="detail-content">
 
-    <div id="reviewList" class="review-list"></div>
+      <div class="detail-main">
 
-    <button id="viewMoreReviews" class="btn-link">View more</button>
-    <hr>
+        <!-- ================= LEFT ================= -->
+        <div class="detail-left">
 
-    <div id="reviewForm" class="review-form">
-      <h4 id="formHeader">${existingReview ? 'Edit Your Review' : 'Write Review'}</h4>
-      
-      <!-- JURUS PAMUNGKAS: Bintang pakai inline onclick window.setRating -->
-      <div id="starInput" class="star-input" style="font-size: 1.8rem; user-select: none;">
-        ${[1,2,3,4,5].map(i => `<span onclick="window.setRating(${i})" style="color: ${existingReview && i <= existingReview.rating ? 'gold' : '#ccc'}; cursor: pointer; display: inline-block; padding-right: 5px; transition: color 0.2s;">★</span>`).join("")}
-      </div>
+          <div class="detail-header">
+            <h1>${wisata.nama}</h1>
 
-      <textarea id="reviewText" placeholder="${loggedIn ? 'Tulis review...' : 'Harap login untuk menulis review...'}" ${loggedIn ? '' : 'disabled'}>${existingReview ? existingReview.komentar : ''}</textarea>
-      
-      <!-- JURUS PAMUNGKAS: Tombol submit pakai inline onclick window.submitReview -->
-      <div style="display: flex; gap: 10px; margin-top: 10px;">
-          <button id="submitReviewBtn" onclick="window.submitReview(${id})" class="btn-submit" style="flex: 1; cursor: pointer;">${existingReview ? 'Update Review' : 'Submit'}</button>
-          ${existingReview ? `<button type="button" onclick="window.deleteMyReview(${existingReview.id}, ${id})" class="btn-submit" style="background: #e74c3c; flex: 1; cursor: pointer;"><i class="fa-solid fa-trash"></i> Hapus</button>` : ''}
-      </div>
-      
-      </div>
-      <hr>
-    <div class="penginapan-section">
-      <h4><i class="fa-solid fa-hotel"></i> Rekomendasi Penginapan</h4>
-      <div id="penginapanList"><p>Memuat data penginapan...</p></div>
-      </div>
-  </div>
-  `;
+            <div class="detail-actions">
+            <button onclick="markAsVisited(${id})" class="btn-visited">
+             <i class="fa-solid fa-location-check"></i> Pernah ke sini
+             </button>
 
-  document.getElementById("favBtn").onclick = () => toggleFavorite(id);
-
-  // Pastikan renderReviewsUI ada di kode kamu yang lain
-  if(typeof renderReviewsUI === "function") {
-      renderReviewsUI(reviewsData, reviewLimit);
-  }
-
-  // Tombol view more
-  const viewMore = document.getElementById("viewMoreReviews");
-  if (viewMore) {
-    viewMore.onclick = () => {
-      reviewLimit += 5;
-      openModal(id); 
-    };
-  }
-  
-  // Ambil rekomendasi penginapan
-  const penginapanContainer = document.getElementById("penginapanList");
-  if (penginapanContainer) {
-    try {
-      const resPenginapan = await fetch(`http://localhost:3000/api/penginapan/rekomendasi?lokasi=${encodeURIComponent(wisata.lokasi)}`);
-      const dataPenginapan = await resPenginapan.json();
-      if (dataPenginapan.status === "success" && dataPenginapan.data.length > 0) {
-        penginapanContainer.innerHTML = dataPenginapan.data.map(p => `
-          <div class="review-item" style="display: flex; align-items: center; gap: 10px;">
-            <img src="${p.gambar}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px;" onerror="this.src='../img/default-hotel.jpg'">
-            <div style="flex: 1;">
-              <strong>${p.nama}</strong><br>
-              <small>${p.alamat || ''}</small><br>
-              <span style="color: var(--moss); font-weight: 600;">Rp ${Number(p.harga).toLocaleString('id-ID')} / malam</span>
+              <button id="favBtn" class="btn-fav">
+                <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+              </button>
             </div>
           </div>
-        `).join("");
-      } else {
-        penginapanContainer.innerHTML = "<p style='color: gray; font-size: 0.9rem;'>Belum ada rekomendasi penginapan untuk lokasi ini.</p>";
-      }
-    } catch (error) {
-      penginapanContainer.innerHTML = "<p style='color: red;'>Gagal memuat data penginapan.</p>";
-    }
+
+          <p class="detail-location">
+            <i class="fa-solid fa-location-dot"></i> ${wisata.lokasi}
+          </p>
+
+          <p class="detail-desc">
+            ${wisata.deskripsi}
+          </p>
+
+          <div class="rating-box">
+            ⭐ ${avg} (${reviewsData.length} reviews)
+          </div>
+
+          <div class="penginapan-section">
+          <h2>Rekomendasi Penginapan</h2>
+          <div id="penginapanList" class="hotel-list"></div>
+          </div>
+
+        </div>
+
+
+        <!-- ================= RIGHT ================= -->
+        <div class="detail-right">
+
+          <div class="review-section">
+            <h3>Ulasan Pengunjung</h3>
+
+            <div id="reviewList"></div>
+
+            <button id="viewMoreReviews" class="btn-view">
+              View more
+            </button>
+          </div>
+
+          <div class="review-form">
+            <h3>${existingReview ? 'Edit Review' : 'Write Review'}</h3>
+
+            <div id="starInput" class="star-input">
+              ${[1,2,3,4,5].map(i => `
+                <span 
+                  data-star="${i}" 
+                  class="star ${i <= currentReviewRating ? 'active' : ''}"
+                >★</span>
+              `).join("")}
+            </div>
+
+            <textarea id="reviewText" placeholder="Tulis pengalaman kamu...">${existingReview ? existingReview.komentar : ''}</textarea>
+
+            <button id="submitReview" class="btn-submit">
+              Submit Review
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+`;
+
+// ===== EVENT =====
+document.getElementById("favBtn").onclick = () => toggleFavorite(id);
+
+renderReviewsUI(reviewsData, reviewLimit);
+setupReviewLogic(id);
+
+// ===== PENGINAPAN =====
+const penginapanContainer = document.getElementById("penginapanList");
+
+try {
+  const resP = await fetch(`http://localhost:3000/api/penginapan/rekomendasi?lokasi=${encodeURIComponent(wisata.lokasi)}`);
+  const dataP = await resP.json();
+
+  if (dataP.status === "success") {
+    penginapanContainer.innerHTML = dataP.data.map(p => `
+      <div class="hotel-item">
+
+        <img src="${p.gambar}" class="hotel-img">
+
+        <div class="hotel-info">
+          <strong>${p.nama}</strong>
+          <p class="hotel-price">
+            Rp ${Number(p.harga).toLocaleString('id-ID')}
+          </p>
+        </div>
+
+      </div>
+    `).join("");
+  }
+} catch {}
+
+  } catch (err) {
+    console.error(err);
   }
 }
 
-// FUNGSI GLOBAL: Menangkap klik bintang dengan akurasi 100%
-window.setRating = function(rating) {
-    currentReviewRating = rating;
-    const stars = document.querySelectorAll("#starInput span");
-    stars.forEach((s, index) => {
-        s.style.color = index < rating ? "gold" : "#ccc";
-    });
-};
+function renderReviewsUI(reviews, limit = 2) {
+  const list = document.getElementById("reviewList");
+  if (!list) return;
 
-// FUNGSI GLOBAL: Menangkap klik submit dengan akurasi 100%
-window.submitReview = async function(wisataId) {
+  if (reviews.length === 0) {
+    list.innerHTML = "<p style='color:gray; font-size:0.9rem;'>Belum ada ulasan untuk tempat ini.</p>";
+    return;
+  }
+
+  list.innerHTML = reviews.slice(0, limit).map(r => `
+    <div class="review-item">
+      <div style="display: flex; justify-content: space-between;">
+        <div class="review-user"><strong>${r.user_name}</strong></div>
+      </div>
+      <div class="stars">${generateStars(r.rating)}</div>
+      <div class="review-text">${r.komentar}</div>
+    </div>
+  `).join("");
+}
+
+function setupReviewLogic(wisataId) {
+  const stars = document.querySelectorAll("#starInput span");
+  const text = document.getElementById("reviewText");
+  const btn = document.getElementById("submitReview");
+  const viewMore = document.getElementById("viewMoreReviews");
+
+  stars.forEach(s => {
+    s.onclick = () => {
+      currentReviewRating = parseInt(s.dataset.star);
+      stars.forEach(x => x.style.color = "gray");
+      for (let i = 0; i < currentReviewRating; i++) {
+        stars[i].style.color = "gold";
+      }
+    };
+  });
+
+  btn.onclick = async () => {
     if (!getIsLoggedIn()) {
       alert("Kamu harus login dulu!");
       return;
     }
 
-    if (currentReviewRating === 0) {
-      alert("Ups! Kamu belum memilih rating bintang. Silakan klik bintangnya dulu ya.");
-      return;
-    }
-
-    const textInput = document.getElementById("reviewText");
-    if (!textInput || !textInput.value.trim()) {
-      alert("Ups! Teks ulasan tidak boleh kosong.");
+    if (!currentReviewRating || !text.value) {
+      alert("Harap isi rating bintang dan teks ulasannya!");
       return;
     }
 
@@ -463,13 +498,8 @@ window.submitReview = async function(wisataId) {
       wisata_id: wisataId,
       user_id: getCurrentUser().id,
       rating: currentReviewRating,
-      komentar: textInput.value
+      komentar: text.value
     };
-
-    const btn = document.getElementById("submitReviewBtn");
-    const originalText = btn.innerText;
-    btn.innerText = "Mengirim...";
-    btn.disabled = true;
 
     try {
       const res = await fetch('http://localhost:3000/api/reviews', {
@@ -481,41 +511,23 @@ window.submitReview = async function(wisataId) {
 
       if (result.status === "success") {
         alert(result.message);
-        openModal(wisataId); // Refresh tampilan layar otomatis
+        openModal(wisataId); 
       } else {
         alert("Gagal mengirim ulasan.");
-        btn.innerText = originalText;
-        btn.disabled = false;
       }
     } catch (error) {
       console.error(error);
       alert("Terjadi kesalahan server saat menyimpan ulasan.");
-      btn.innerText = "Submit";
-      btn.disabled = false;
     }
-};
+  };
 
-// FUNGSI GLOBAL: Hapus Review
-window.deleteMyReview = async function(reviewId, wisataId) {
-    if (confirm("Apakah kamu yakin ingin menghapus ulasan kamu?")) {
-        try {
-            const res = await fetch(`http://localhost:3000/api/admin/reviews/${reviewId}`, {
-                method: 'DELETE'
-            });
-            const result = await res.json();
-            
-            if (result.status === "success") {
-                alert("Ulasan berhasil dihapus!");
-                openModal(wisataId); 
-            } else {
-                alert("Gagal menghapus ulasan: " + result.message);
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Terjadi kesalahan server saat mencoba menghapus ulasan.");
-        }
-    }
-};
+  if (viewMore) {
+    viewMore.onclick = () => {
+      reviewLimit += 5;
+      openModal(wisataId); 
+    };
+  }
+}
 
 function closeModal() {
   const overlay = document.getElementById("modalOverlay");
@@ -628,6 +640,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
   });
+
+  loadDetailPage();
 });
 
 /* =========================================
@@ -707,7 +721,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="blog-tag">${featured.category || 'Featured'}</span>
                             <h2>${featured.title}</h2>
                             <p>${featuredContent}</p>
-                            <a href="login.html"><button class="btn-read" style="cursor:pointer;">Read More</button></a>
+                            <a href="blog-detail.html?id=${featured.id}"><button class="btn-read">Read More</button></a>
                         </div>
                     </div>
                 `;
@@ -724,14 +738,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         ? new Date(b.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) 
                         : b.category;
 
+                    // PERBAIKAN: Hapus class "fade-in" di baris bawah ini
                     listContainer.innerHTML += `
-                        <div class="blog-card show" style="opacity: 1;"> 
+                        <div class="blog-card"> 
                             <img src="${b.image || 'img/default-image.jpg'}">
                             <div class="blog-content">
                                 <span class="blog-date" style="text-transform: capitalize;">${dateStr}</span>
                                 <h3>${b.title}</h3>
                                 <p>${shortContent}</p>
-                                <a href="login.html" class="read-more">Read More →</a>
+                                <a href="blog-detail.html?id=${b.id}" class="read-more">Read More →</a>
                             </div>
                         </div>
                     `;
@@ -958,25 +973,5 @@ window.closeImagePreview = function() {
 document.getElementById("imagePreviewModal").onclick = function(e) {
     if (e.target.id === "imagePreviewModal") {
         closeImagePreview();
-    }
-};
-/* ===============================
-   LOGIKA READ MORE (Opsi 1: Login Check)
-=============================== */
-window.handleReadMore = function(blogId) {
-    if (!getIsLoggedIn()) {
-        alert("Ups! Kamu harus login terlebih dahulu untuk membaca artikel selengkapnya.");
-        
-        // Opsional: Simpan tujuan terakhir agar setelah login bisa diarahkan kembali ke blog ini
-        localStorage.setItem('redirectAfterLogin', `blog-detail.html?id=${blogId}`);
-        
-        // Arahkan ke halaman login (menggunakan ../ karena file ini dipanggil dari folder user)
-        window.location.href = "../login.html"; 
-    } else {
-        // Pesan sementara karena file blog-detail.html belum ada
-        alert("Anda sudah login! Halaman detail artikel sedang dalam tahap pengembangan oleh tim Backend.");
-        
-        // Nanti jika sudah buat file HTML-nya, hapus alert di atas dan buka komentar kode di bawah ini:
-        // window.location.href = `blog-detail.html?id=${blogId}`;
     }
 };

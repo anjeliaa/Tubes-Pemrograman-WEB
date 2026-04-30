@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Detail Wisata</title>
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
 </head>
 
 <body>
 
-    <nav class="navbar" id="navbar">
+ <nav class="navbar" id="navbar">
         <div class="nav-container">
             <a href="dashboard.html" class="nav-logo">
                 <span class="logo-text">Jejak <strong>Bencoolen</strong></span>
             </a>
             
             <ul class="nav-menu">
-                <li><a href="dashboard.html" class="nav-link active">Home</a></li>
-                <li><a href="explore.html" class="nav-link">Explore</a></li>
+                <li><a href="dashboard.html" class="nav-link">Home</a></li>
+                <li><a href="explore.html" class="nav-link active">Explore</a></li>
                 <li><a href="favorites.html" class="nav-link">Favorites</a></li>
                 <li><a href="trips.html" class="nav-link">Trips</a></li>
             </ul>
@@ -38,66 +38,12 @@
             </div>
         </div>
     </nav>
-    
-    <section class="dash-hero">
-      <div class="container dash-hero-inner">
-        <div>
-          <h1 id="welcomeText">
-            <i class="fa-solid fa-sun"></i> Welcome back
-          </h1>
-          <p>Temukan destinasi terbaik untuk perjalananmu hari ini</p>
-        </div>
-      </div>
-    </section>
-    
-    <section class="dash-stats">
-      <div class="container stats-grid">
-        <div class="stat-card">
-          <i class="fa-solid fa-heart"></i>
-          <h3 id="totalFav">...</h3>
-          <p>Favorites</p>
-        </div>
-        
-        <div class="stat-card">
-          <i class="fa-solid fa-star"></i>
-          <h3 id="totalRev">...</h3>
-          <p>Reviews</p>
-        </div>
-        
-        <div class="stat-card">
-          <i class="fa-solid fa-location-dot"></i>
-          <h3 id="totalTrips">...</h3>
-          <p>Trips</p>
-        </div>
-      </div>
-    </section>
-    
-    <section class="dash-section">
-      <div class="container">
-        <div class="section-title">
-          <h2><i class="fa-solid fa-compass"></i> Rekomendasi</h2>
-          <p>Destinasi terbaik untuk kamu</p>
-        </div>
-        
-        <div class="rekom-grid" id="rekomGrid"></div>
-        
-        <div class="rekom-more">
-          <a href="explore.html" class="btn-view-more">
-            View More <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-    </section>
-    
-    <section class="dash-section">
-      <div class="container">
-        <div class="section-title">
-          <h2><i class="fa-solid fa-clock"></i> Aktivitas Terbaru</h2>
-        </div>
-        <div class="activity-list" id="activityList"></div>
-      </div>
-    </section>
+<!-- CONTAINER -->
+<div class="container">
+  <div id="detailContainer"></div>
+</div>
 
+    <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -114,7 +60,7 @@
                 </div>
                 <div class="footer-links">
                     <h4>Explore</h4>
-                    <a href="index.html">Home</a>
+                    <a href="dashboard.html">Home</a>
                     <a href="explore.html">Explore</a>
                     <a href="favorites.html">Favorites</a>
                     <a href="profile.html">Profile</a>
@@ -138,8 +84,9 @@
             </div>
         </div>
     </footer>
-    
-    <script src="../user.js"></script>
-    <script src="../script.js"></script>
+
+<!-- SCRIPT -->
+<script src="../script.js"></script>
+<script src="../user.js"></script>
 </body>
 </html>

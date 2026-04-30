@@ -132,7 +132,7 @@ if (path.includes("destinations")) {
   }
 
   /**
-   * Mengambil daftar lokasi unik untuk saran (datalist)
+   * TAMBAHAN: Mengambil daftar lokasi unik untuk saran (datalist)
    */
   async function refreshLocationSuggestions() {
     try {
@@ -148,7 +148,7 @@ if (path.includes("destinations")) {
     }
   }
 
-  /* AMBIL DATA DARI NODE.JS (DATABASE) */
+ /* AMBIL DATA DARI NODE.JS (DATABASE) */
   async function fetchWisata() {
     try {
       const response = await fetch('http://localhost:3000/api/wisata');
