@@ -216,6 +216,20 @@ app.get('/api/blogs', async (req, res) => {
     }
 });
 
+// 1.5 Ambil detail 1 blog berdasarkan ID (BARU DITAMBAHKAN)
+app.get('/api/blogs/:id', async (req, res) => {
+    try {
+        const [rows] = await pool.execute('SELECT * FROM blogs WHERE id = ?', [req.params.id]);
+        if (rows.length === 0) {
+            return res.status(404).json({ status: "error", message: "Artikel tidak ditemukan." });
+        }
+        res.json({ status: "success", data: rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "error", message: "Gagal mengambil detail blog" });
+    }
+});
+
 // 2. Tambah blog baru
 app.post('/api/blogs', async (req, res) => {
     const { title, category, content, image } = req.body;
@@ -548,6 +562,7 @@ app.post('/api/trips/:tripId/photo', async (req, res) => {
         res.status(500).json({ status: "error", message: "Gagal mengunggah foto bukti." });
     }
 });
+
 // 4. Hapus Foto Kenangan dari Galeri
 app.delete('/api/trips/:tripId/photo', async (req, res) => {
     const { tripId } = req.params;
@@ -576,6 +591,7 @@ app.delete('/api/trips/:tripId/photo', async (req, res) => {
         res.status(500).json({ status: "error", message: "Gagal menghapus foto." });
     }
 });
+
 // Jalankan Server
 app.listen(PORT, () => {
     console.log(`Server Backend berjalan di http://localhost:${PORT}`);
