@@ -13,6 +13,7 @@
   --text-mid:    #4a6358;
   --text-soft:   #8aab9a;
   --white:       #ffffff;
+  --grid:         #e99a28;
   --shadow-sm:   0 2px 12px rgba(30,64,53,.08);
   --shadow-md:   0 8px 32px rgba(30,64,53,.14);
   --shadow-lg:   0 20px 60px rgba(30,64,53,.20);
@@ -1757,7 +1758,7 @@ textarea {
 
 .about-purpose {
   padding: 90px 0;
-  background: var(--cream);
+  background: var(--grid);
   text-align: center;
 }
 .about-purpose h2 { font-family: 'Playfair Display', serif; }
@@ -1873,7 +1874,7 @@ textarea {
   display: flex;
   gap: 15px;
   align-items: center;
-  background: white;
+  background: var(--grid);
   padding: 15px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
@@ -1917,7 +1918,7 @@ textarea {
   gap: 20px;
 }
 .stat-card {
-  background: white;
+  background: #a3d4d1;
   padding: 24px;
   border-radius: var(--radius-md);
   text-align: center;
@@ -1946,7 +1947,7 @@ textarea {
   gap: 20px;
 }
 .rekom-card {
-  background: white;
+  background: var(--grid);
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -1998,7 +1999,7 @@ textarea {
   gap: 10px;
   align-items: center;
   padding: 12px;
-  background: white;
+  background: var(--grid);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
 }
@@ -2018,7 +2019,7 @@ textarea {
 }
 
 .profile-sidebar {
-  background: var(--white);
+  background: var(--grid);
   border-radius: var(--radius-lg);
   padding: 30px 24px;
   text-align: center;
@@ -2043,7 +2044,7 @@ textarea {
 }
 .profile-sidebar p {
   font-size: .85rem;
-  color: var(--text-soft);
+  color: var(--forest);
   margin-top: 4px;
 }
 
