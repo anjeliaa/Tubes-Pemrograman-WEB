@@ -684,7 +684,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="blog-tag">${featured.category || 'Featured'}</span>
                             <h2>${featured.title}</h2>
                             <p>${featuredContent}</p>
-                            <a href="blog-detail.html?id=${featured.id}"><button class="btn-read">Read More</button></a>
+                            <a href="login.html"><button class="btn-read" style="cursor:pointer;">Read More</button></a>
                         </div>
                     </div>
                 `;
@@ -701,15 +701,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         ? new Date(b.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) 
                         : b.category;
 
-                    // PERBAIKAN: Hapus class "fade-in" di baris bawah ini
                     listContainer.innerHTML += `
-                        <div class="blog-card"> 
+                        <div class="blog-card show" style="opacity: 1;"> 
                             <img src="${b.image || 'img/default-image.jpg'}">
                             <div class="blog-content">
                                 <span class="blog-date" style="text-transform: capitalize;">${dateStr}</span>
                                 <h3>${b.title}</h3>
                                 <p>${shortContent}</p>
-                                <a href="blog-detail.html?id=${b.id}" class="read-more">Read More →</a>
+                                <a href="login.html" class="read-more">Read More →</a>
                             </div>
                         </div>
                     `;
@@ -936,5 +935,25 @@ window.closeImagePreview = function() {
 document.getElementById("imagePreviewModal").onclick = function(e) {
     if (e.target.id === "imagePreviewModal") {
         closeImagePreview();
+    }
+};
+/* ===============================
+   LOGIKA READ MORE (Opsi 1: Login Check)
+=============================== */
+window.handleReadMore = function(blogId) {
+    if (!getIsLoggedIn()) {
+        alert("Ups! Kamu harus login terlebih dahulu untuk membaca artikel selengkapnya.");
+        
+        // Opsional: Simpan tujuan terakhir agar setelah login bisa diarahkan kembali ke blog ini
+        localStorage.setItem('redirectAfterLogin', `blog-detail.html?id=${blogId}`);
+        
+        // Arahkan ke halaman login (menggunakan ../ karena file ini dipanggil dari folder user)
+        window.location.href = "../login.html"; 
+    } else {
+        // Pesan sementara karena file blog-detail.html belum ada
+        alert("Anda sudah login! Halaman detail artikel sedang dalam tahap pengembangan oleh tim Backend.");
+        
+        // Nanti jika sudah buat file HTML-nya, hapus alert di atas dan buka komentar kode di bawah ini:
+        // window.location.href = `blog-detail.html?id=${blogId}`;
     }
 };
