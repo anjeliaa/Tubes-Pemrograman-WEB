@@ -133,6 +133,18 @@ app.post('/api/wisata', async (req, res) => {
     }
 });
 
+// API Hapus Wisata (BARU DITAMBAHKAN)
+app.delete('/api/wisata/:id', async (req, res) => {
+    try {
+        // Hapus data wisata berdasarkan ID
+        await pool.execute('DELETE FROM wisata WHERE id = ?', [req.params.id]);
+        res.json({ status: "success", message: "Data wisata berhasil dihapus secara permanen!" });
+    } catch (error) {
+        console.error("Error saat hapus wisata:", error);
+        res.status(500).json({ status: "error", message: "Gagal menghapus data wisata karena kesalahan server" });
+    }
+});
+
 /* ===============================
    API FAVORITES (WISHLIST)
 =============================== */
@@ -216,7 +228,7 @@ app.get('/api/blogs', async (req, res) => {
     }
 });
 
-// 1.5 Ambil detail 1 blog berdasarkan ID (BARU DITAMBAHKAN)
+// 1.5 Ambil detail 1 blog berdasarkan ID
 app.get('/api/blogs/:id', async (req, res) => {
     try {
         const [rows] = await pool.execute('SELECT * FROM blogs WHERE id = ?', [req.params.id]);
@@ -361,7 +373,7 @@ app.get('/api/admin/users', async (req, res) => {
     }
 });
 
-// API Hapus User (BARU)
+// API Hapus User
 app.delete('/api/admin/users/:id', async (req, res) => {
     try {
         const userId = req.params.id;
@@ -373,7 +385,7 @@ app.delete('/api/admin/users/:id', async (req, res) => {
     }
 });
 
-// API Ban / Unban User (BARU)
+// API Ban / Unban User
 app.put('/api/admin/users/:id/ban', async (req, res) => {
     try {
         const userId = req.params.id;
@@ -404,7 +416,7 @@ app.get('/api/admin/reviews', async (req, res) => {
     }
 });
 
-// API Hapus Review (BARU)
+// API Hapus Review
 app.delete('/api/admin/reviews/:id', async (req, res) => {
     try {
         const reviewId = req.params.id;
@@ -449,7 +461,6 @@ app.get('/api/penginapan/rekomendasi', async (req, res) => {
 
 // POST (tambah penginapan) – untuk admin
 app.post('/api/penginapan', async (req, res) => {
-  // PERBAIKAN: Menambahkan 'image' agar bisa diterima dari script frontend admin.js
   const { nama, lokasi, alamat, harga, gambar, image } = req.body;
   const imgToSave = gambar || image; // Mengakomodasi "gambar" atau "image"
 
@@ -467,7 +478,6 @@ app.post('/api/penginapan', async (req, res) => {
 
 // PUT (edit penginapan)
 app.put('/api/penginapan/:id', async (req, res) => {
-  // PERBAIKAN: Menambahkan 'image' agar sinkron dengan update frontend
   const { nama, lokasi, alamat, harga, gambar, image } = req.body;
   const imgToSave = gambar || image;
 
@@ -514,7 +524,7 @@ app.post('/api/trips', async (req, res) => {
     }
 });
 
-// 2. Ambil daftar riwayat user (PERBAIKAN: Menambahkan t.bukti_foto pada query)
+// 2. Ambil daftar riwayat user
 app.get('/api/trips/:userId', async (req, res) => {
     try {
         const query = `
