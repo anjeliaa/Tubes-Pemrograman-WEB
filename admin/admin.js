@@ -6,7 +6,7 @@ const path = window.location.pathname;
 /* ===============================
    ELEMENT CHECK
 =============================== */
-const logoutBtn = document.getElementById("logoutBtn");
+// const logoutBtn = document.getElementById("logoutBtn"); // Removed: Now using event delegation
 
 /* ===============================
    AUTO ACTIVE SIDEBAR
@@ -27,14 +27,30 @@ if (!currentUser || currentUser.role !== "admin") {
 }
 
 /* ===============================
-   LOGOUT
+   LOGOUT (DIPERBAIKI: Menggunakan Event Delegation)
 =============================== */
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("currentUser");
-    window.location.href = "../login.html";
-  });
-}
+document.addEventListener("click", function(e) {
+  // Mencari apakah yang diklik adalah tombol dengan ID logoutBtn (atau icon di dalamnya)
+  const btnLogout = e.target.closest("#logoutBtn");
+  
+  if (btnLogout) {
+    e.preventDefault(); // Mencegah browser reload jika tombolnya menggunakan tag <a>
+    Swal.fire({
+      title: 'Yakin ingin keluar?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e74c3c',
+      cancelButtonColor: '#1a4331',
+      confirmButtonText: 'Ya, Keluar!',
+      cancelButtonText: 'Batal'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        localStorage.removeItem("currentUser");
+        window.location.href = "../login.html";
+      }
+    });
+  }
+});
 
 /* ===============================
    DASHBOARD
@@ -53,13 +69,11 @@ if (path.includes("dashboard")) {
       if (result.status === "success") {
         const stats = result.data;
 
-        // Update angka di kotak atas
         setText("totalWisata", stats.totalWisata);
         setText("totalUser", stats.totalUsers);
         setText("totalBlog", stats.totalBlogs);
         setText("totalReview", stats.totalReviews);
 
-        // Update daftar Wisata Terbaru
         const recentContainer = document.getElementById("recentWisata");
         if (recentContainer) {
           recentContainer.innerHTML = "";
@@ -91,7 +105,6 @@ if (path.includes("dashboard")) {
     }
   }
 
-  // Panggil fungsi saat halaman diload
   loadAdminDashboard();
 }
 
@@ -105,15 +118,13 @@ if (path.includes("destinations")) {
   const inputImage = document.getElementById("image");
 
   let wisata = []; 
-  let editIndex = null;
+  let editId = null; 
   let imageBase64 = "";
 
-  /* INIT PREVIEW STATE */
   if (preview) {
     preview.style.display = "none";
   }
 
-  /* IMAGE PREVIEW FIX */
   if (inputImage) {
     inputImage.addEventListener("change", function () {
       const file = this.files[0];
@@ -131,9 +142,6 @@ if (path.includes("destinations")) {
     });
   }
 
-  /**
-   * TAMBAHAN: Mengambil daftar lokasi unik untuk saran (datalist)
-   */
   async function refreshLocationSuggestions() {
     try {
       const res = await fetch('http://localhost:3000/api/locations');
@@ -148,7 +156,6 @@ if (path.includes("destinations")) {
     }
   }
 
- /* AMBIL DATA DARI NODE.JS (DATABASE) */
   async function fetchWisata() {
     try {
       const response = await fetch('http://localhost:3000/api/wisata');
@@ -164,11 +171,9 @@ if (path.includes("destinations")) {
     }
   }
 
-  // Panggil fungsi awal
   fetchWisata();
   refreshLocationSuggestions();
 
-  /* RENDER LIST */
   function render() {
     if (!list) return;
     list.innerHTML = "";
@@ -192,36 +197,46 @@ if (path.includes("destinations")) {
         </div>
         <div class="admin-actions">
           <button class="btn-edit" data-index="${index}">Edit</button>
-          <!-- PERBAIKAN: Gunakan data-id dari database -->
           <button class="btn-delete" data-id="${item.id}">Hapus</button>
         </div>
       `;
       list.appendChild(el);
     });
 
-    /* DELETE (PERBAIKAN: TERHUBUNG KE API DATABASE) */
+    /* DELETE */
     document.querySelectorAll(".btn-delete").forEach(btn => {
-      btn.addEventListener("click", async function () {
-        const idWisata = this.dataset.id; // Ambil ID asli dari database
+      btn.addEventListener("click", function () {
+        const idWisata = this.dataset.id; 
 
-        if (confirm("Yakin ingin menghapus data wisata ini secara permanen?")) {
-          try {
-            const res = await fetch(`http://localhost:3000/api/wisata/${idWisata}`, { 
-              method: 'DELETE' 
-            });
-            const result = await res.json();
-            
-            if (result.status === "success") {
-              alert(result.message);
-              fetchWisata(); // Refresh daftar dari database
-            } else {
-              alert("Gagal menghapus: " + result.message);
+        Swal.fire({
+          title: 'Hapus Destinasi?',
+          text: "Yakin ingin menghapus data wisata ini secara permanen?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#e74c3c',
+          cancelButtonColor: '#1a4331',
+          confirmButtonText: 'Ya, Hapus!',
+          cancelButtonText: 'Batal'
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              const res = await fetch(`http://localhost:3000/api/wisata/${idWisata}`, { 
+                method: 'DELETE' 
+              });
+              const data = await res.json();
+              
+              if (data.status === "success") {
+                Swal.fire({icon: 'success', title: 'Terhapus!', text: data.message, showConfirmButton: false, timer: 1500});
+                fetchWisata(); 
+              } else {
+                Swal.fire({icon: 'error', title: 'Gagal', text: data.message, confirmButtonColor: '#1a4331'});
+              }
+            } catch (error) {
+              console.error(error);
+              Swal.fire({icon: 'error', title: 'Error', text: 'Terjadi kesalahan saat menghubungi server.', confirmButtonColor: '#1a4331'});
             }
-          } catch (error) {
-            console.error(error);
-            alert("Terjadi kesalahan saat menghidupungi server.");
           }
-        }
+        });
       });
     });
 
@@ -242,13 +257,20 @@ if (path.includes("destinations")) {
           preview.style.display = "block";
         }
 
-        editIndex = i;
+        editId = data.id;
+        
+        // MENGHAPUS REQUIRED SEMENTARA SAAT EDIT
+        if (inputImage) inputImage.removeAttribute("required");
+        
+        const submitBtn = form.querySelector("button") || form.querySelector("input[type='submit']");
+        if(submitBtn) submitBtn.textContent = "Update Wisata";
+
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
     });
   }
 
-  /* SUBMIT FORM (POST KE NODE.JS) */
+  /* SUBMIT FORM */
   if (form) {
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
@@ -258,27 +280,24 @@ if (path.includes("destinations")) {
       const kategori = document.getElementById("kategori").value;
       const deskripsi = document.getElementById("deskripsi").value;
 
-      if (!imageBase64 && editIndex === null) {
-        alert("Upload gambar dulu!");
+      if (!imageBase64 && editId === null) {
+        Swal.fire({icon: 'info', title: 'Upload Gambar', text: 'Silakan upload gambar wisata dulu!', confirmButtonColor: '#1a4331'});
         return;
       }
 
       const data = { nama, lokasi, kategori, deskripsi, image: imageBase64 };
 
       try {
-        if (editIndex !== null) {
-          alert("Catatan: Edit saat ini hanya mengubah tampilan (API Update belum dibuat di server).");
-          wisata[editIndex] = { ...wisata[editIndex], ...data, gambar: imageBase64 };
-          editIndex = null;
-          render();
-          form.reset();
-          if (preview) preview.style.display = "none";
-          imageBase64 = "";
-          return;
+        let url = 'http://localhost:3000/api/wisata';
+        let method = 'POST';
+
+        if (editId !== null) {
+          url = `http://localhost:3000/api/wisata/${editId}`;
+          method = 'PUT';
         }
 
-        const response = await fetch('http://localhost:3000/api/wisata', {
-          method: 'POST',
+        const response = await fetch(url, {
+          method: method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
@@ -286,19 +305,26 @@ if (path.includes("destinations")) {
         const result = await response.json();
 
         if (result.status === "success") {
-          alert(result.message);
+          Swal.fire({icon: 'success', title: 'Berhasil', text: result.message, showConfirmButton: false, timer: 1500});
           form.reset();
           if (preview) preview.style.display = "none";
           imageBase64 = "";
+          editId = null;
+          
+          // MENGEMBALIKAN REQUIRED SAAT FORM DI-RESET
+          if (inputImage) inputImage.setAttribute("required", "required");
+
+          const submitBtn = form.querySelector("button") || form.querySelector("input[type='submit']");
+          if(submitBtn) submitBtn.textContent = "Simpan";
           
           fetchWisata(); 
-          refreshLocationSuggestions(); // Refresh saran lokasi agar data baru muncul
+          refreshLocationSuggestions(); 
         } else {
-          alert("Gagal menyimpan: " + result.message);
+          Swal.fire({icon: 'error', title: 'Gagal', text: result.message, confirmButtonColor: '#1a4331'});
         }
       } catch (error) {
         console.error("Error:", error);
-        alert("Terjadi kesalahan koneksi ke server.");
+        Swal.fire({icon: 'error', title: 'Error', text: 'Terjadi kesalahan koneksi ke server.', confirmButtonColor: '#1a4331'});
       }
     });
   }
@@ -311,12 +337,12 @@ if (path.includes("blogs")) {
   const form = document.getElementById("formBlog");
   const list = document.getElementById("blogList");
   const preview = document.getElementById("previewImg");
+  const inputImage = document.getElementById("image");
 
   let blogs = [];
-  let editId = null; // Menggunakan ID dari database
+  let editId = null; 
   let imageBase64 = "";
 
-  const inputImage = document.getElementById("image");
   if (inputImage) {
     inputImage.addEventListener("change", function () {
       const file = this.files[0];
@@ -331,7 +357,6 @@ if (path.includes("blogs")) {
     });
   }
 
-  // Tarik data dari MySQL
   async function fetchBlogs() {
     try {
       const res = await fetch('http://localhost:3000/api/blogs');
@@ -355,11 +380,8 @@ if (path.includes("blogs")) {
     blogs.forEach((b) => {
       const div = document.createElement("div");
       div.className = "admin-item";
-      
-      // Mencegah error jika content kosong
       const shortContent = b.content ? b.content.slice(0, 80) : "";
 
-      // Struktur HTML tetap dipertahankan agar CSS tidak rusak
       div.innerHTML = `
         <img src="${b.image}" style="width:90px;height:70px;object-fit:cover;border-radius:8px;">
         <div class="admin-info">
@@ -375,29 +397,42 @@ if (path.includes("blogs")) {
       list.appendChild(div);
     });
 
-    // Event Hapus
     document.querySelectorAll(".btn-delete").forEach(btn => {
-      btn.addEventListener("click", async function () {
+      btn.addEventListener("click", function () {
         const id = this.dataset.id;
-        if (confirm("Yakin ingin menghapus blog ini?")) {
-          try {
-            const res = await fetch(`http://localhost:3000/api/blogs/${id}`, { method: 'DELETE' });
-            const result = await res.json();
-            if (result.status === "success") {
-              fetchBlogs(); // Otomatis refresh list
+        Swal.fire({
+          title: 'Hapus Blog?',
+          text: "Yakin ingin menghapus blog ini?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#e74c3c',
+          cancelButtonColor: '#1a4331',
+          confirmButtonText: 'Ya, Hapus!',
+          cancelButtonText: 'Batal'
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              const res = await fetch(`http://localhost:3000/api/blogs/${id}`, { method: 'DELETE' });
+              const data = await res.json();
+              if (data.status === "success") {
+                Swal.fire({icon: 'success', title: 'Terhapus!', showConfirmButton: false, timer: 1500});
+                fetchBlogs(); 
+              } else {
+                Swal.fire({icon: 'error', title: 'Gagal', text: data.message, confirmButtonColor: '#1a4331'});
+              }
+            } catch (error) {
+              console.error(error);
+              Swal.fire({icon: 'error', title: 'Error', text: 'Terjadi kesalahan server.', confirmButtonColor: '#1a4331'});
             }
-          } catch (error) {
-            console.error(error);
           }
-        }
+        });
       });
     });
 
-    // Event Edit
     document.querySelectorAll(".btn-edit").forEach(btn => {
       btn.addEventListener("click", function () {
         const id = this.dataset.id;
-        const data = blogs.find(b => b.id == id); // Cari data berdasarkan ID
+        const data = blogs.find(b => b.id == id); 
 
         document.getElementById("title").value = data.title;
         document.getElementById("category").value = data.category;
@@ -406,17 +441,21 @@ if (path.includes("blogs")) {
         preview.src = data.image;
         preview.style.display = "block";
         imageBase64 = data.image;
-        editId = id; // Set mode Edit aktif
+        editId = id; 
         
+        // MENGHAPUS REQUIRED SEMENTARA SAAT EDIT
+        if (inputImage) inputImage.removeAttribute("required");
+
+        const submitBtn = form.querySelector("button") || form.querySelector("input[type='submit']");
+        if(submitBtn) submitBtn.textContent = "Update Blog";
+
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
     });
   }
 
-  // Panggil fungsi awal
   fetchBlogs();
 
-  // Event Submit (Tambah Baru & Simpan Edit)
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
     const title = document.getElementById("title").value;
@@ -424,7 +463,7 @@ if (path.includes("blogs")) {
     const content = document.getElementById("content").value;
     
     if (!imageBase64 && !editId) {
-      alert("Upload gambar dulu!");
+      Swal.fire({icon: 'info', title: 'Upload Gambar', text: 'Upload gambar untuk blog ini terlebih dahulu.', confirmButtonColor: '#1a4331'});
       return;
     }
 
@@ -432,11 +471,11 @@ if (path.includes("blogs")) {
 
     try {
       let url = 'http://localhost:3000/api/blogs';
-      let method = 'POST'; // Default adalah Tambah Baru
+      let method = 'POST'; 
 
       if (editId !== null) {
         url = `http://localhost:3000/api/blogs/${editId}`;
-        method = 'PUT'; // Jika sedang edit, ubah method jadi PUT
+        method = 'PUT'; 
       }
 
       const res = await fetch(url, {
@@ -448,18 +487,25 @@ if (path.includes("blogs")) {
       const result = await res.json();
       
       if (result.status === "success") {
-        alert(result.message);
+        Swal.fire({icon: 'success', title: 'Berhasil', text: result.message, showConfirmButton: false, timer: 1500});
         form.reset();
         preview.style.display = "none";
         imageBase64 = "";
-        editId = null; // Kembalikan ke mode Tambah Baru
-        fetchBlogs(); // Refresh otomatis
+        editId = null; 
+        
+        // MENGEMBALIKAN REQUIRED SAAT FORM DI-RESET
+        if (inputImage) inputImage.setAttribute("required", "required");
+
+        const submitBtn = form.querySelector("button") || form.querySelector("input[type='submit']");
+        if(submitBtn) submitBtn.textContent = "Simpan";
+
+        fetchBlogs(); 
       } else {
-        alert("Gagal menyimpan: " + result.message);
+        Swal.fire({icon: 'error', title: 'Gagal', text: result.message, confirmButtonColor: '#1a4331'});
       }
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan server.");
+      Swal.fire({icon: 'error', title: 'Error', text: 'Terjadi kesalahan server.', confirmButtonColor: '#1a4331'});
     }
   });
 }
@@ -471,101 +517,127 @@ if (path.includes("users")) {
   let adminUsers = [];
   let adminReviews = [];
 
-  // Fungsi untuk menarik data dari Node.js (MySQL)
   async function fetchUsersAndReviews() {
     try {
-      // 1. Ambil Data Users
       const resUsers = await fetch('http://localhost:3000/api/admin/users');
       const dataUsers = await resUsers.json();
       if (dataUsers.status === "success") {
-        // LOGIKA BARU: Filter data, HANYA simpan yang role-nya BUKAN "admin"
         adminUsers = dataUsers.data.filter(user => user.role !== "admin");
       }
 
-      // 2. Ambil Data Reviews
       const resReviews = await fetch('http://localhost:3000/api/admin/reviews');
       const dataReviews = await resReviews.json();
       if (dataReviews.status === "success") {
         adminReviews = dataReviews.data;
       }
 
-      // 3. Render semuanya ke layar
       renderAdminUsers();
       renderAdminReviews();
       updateUserStats();
-
     } catch (error) {
       console.error("Gagal mengambil data Users & Reviews:", error);
     }
   }
 
-  // Fungsi menghapus user ke Database (BARU)
-  window.deleteUserDB = async function(id) {
-    if (confirm("Apakah kamu yakin ingin menghapus user ini secara permanen?")) {
-      try {
-        const res = await fetch(`http://localhost:3000/api/admin/users/${id}`, {
-          method: 'DELETE'
-        });
-        const result = await res.json();
-        
-        if (result.status === "success") {
-          alert("User berhasil dihapus!");
-          fetchUsersAndReviews(); // Refresh layar otomatis
-        } else {
-          alert("Gagal menghapus: " + result.message);
+  window.deleteUserDB = function(id) {
+    Swal.fire({
+      title: 'Hapus User?',
+      text: "User ini akan dihapus secara permanen beserta datanya.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e74c3c',
+      cancelButtonColor: '#1a4331',
+      confirmButtonText: 'Ya, Hapus!',
+      cancelButtonText: 'Batal'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await fetch(`http://localhost:3000/api/admin/users/${id}`, {
+            method: 'DELETE'
+          });
+          const data = await res.json();
+          
+          if (data.status === "success") {
+            Swal.fire({icon: 'success', title: 'Terhapus!', text: data.message, showConfirmButton: false, timer: 1500});
+            fetchUsersAndReviews(); 
+          } else {
+            Swal.fire({icon: 'error', title: 'Gagal', text: data.message, confirmButtonColor: '#1a4331'});
+          }
+        } catch (err) {
+          console.error(err);
+          Swal.fire({icon: 'error', title: 'Error', text: 'Terjadi kesalahan server.', confirmButtonColor: '#1a4331'});
         }
-      } catch (err) {
-        console.error(err);
-        alert("Terjadi kesalahan server.");
       }
-    }
+    });
   };
 
-  // Fungsi Ban / Unban user ke Database (BARU)
-  window.toggleBanUser = async function(id, currentStatus) {
-    const newStatus = !currentStatus; // Kebalikan dari status saat ini
+  window.toggleBanUser = function(id, currentStatus) {
+    const newStatus = !currentStatus; 
     const actionText = newStatus ? "membekukan (ban)" : "membuka (unban)";
 
-    if (confirm(`Apakah kamu yakin ingin ${actionText} user ini?`)) {
-      try {
-        const res = await fetch(`http://localhost:3000/api/admin/users/${id}/ban`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ banned: newStatus })
-        });
-        const result = await res.json();
+    Swal.fire({
+      title: 'Ubah Status Akun?',
+      text: `Apakah kamu yakin ingin ${actionText} user ini?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: newStatus ? '#e74c3c' : '#f39c12',
+      cancelButtonColor: '#1a4331',
+      confirmButtonText: 'Ya, Lanjutkan!',
+      cancelButtonText: 'Batal'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await fetch(`http://localhost:3000/api/admin/users/${id}/ban`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ banned: newStatus })
+          });
+          const data = await res.json();
 
-        if (result.status === "success") {
-          fetchUsersAndReviews(); // Refresh layar otomatis
-        } else {
-          alert("Gagal mengubah status: " + result.message);
+          if (data.status === "success") {
+            Swal.fire({icon: 'success', title: 'Berhasil!', showConfirmButton: false, timer: 1500});
+            fetchUsersAndReviews(); 
+          } else {
+            Swal.fire({icon: 'error', title: 'Gagal', text: data.message, confirmButtonColor: '#1a4331'});
+          }
+        } catch (err) {
+          console.error(err);
+          Swal.fire({icon: 'error', title: 'Error', text: 'Terjadi kesalahan server.', confirmButtonColor: '#1a4331'});
         }
-      } catch (err) {
-        console.error(err);
-        alert("Terjadi kesalahan server.");
       }
-    }
+    });
   };
 
-  // Fungsi menghapus review ke Database (BARU)
-  window.deleteReviewDB = async function(id) {
-    if (confirm("Apakah kamu yakin ingin menghapus ulasan ini?")) {
-      try {
-        const res = await fetch(`http://localhost:3000/api/admin/reviews/${id}`, {
-          method: 'DELETE'
-        });
-        const result = await res.json();
-        
-        if (result.status === "success") {
-          fetchUsersAndReviews(); // Refresh layar otomatis
-        } else {
-          alert("Gagal menghapus review: " + result.message);
+  window.deleteReviewDB = function(id) {
+    Swal.fire({
+      title: 'Hapus Ulasan?',
+      text: "Ulasan ini akan dihapus permanen.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e74c3c',
+      cancelButtonColor: '#1a4331',
+      confirmButtonText: 'Ya, Hapus!',
+      cancelButtonText: 'Batal'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await fetch(`http://localhost:3000/api/admin/reviews/${id}`, {
+            method: 'DELETE'
+          });
+          const data = await res.json();
+          
+          if (data.status === "success") {
+            Swal.fire({icon: 'success', title: 'Terhapus!', showConfirmButton: false, timer: 1500});
+            fetchUsersAndReviews(); 
+          } else {
+            Swal.fire({icon: 'error', title: 'Gagal', text: data.message, confirmButtonColor: '#1a4331'});
+          }
+        } catch (err) {
+          console.error(err);
+          Swal.fire({icon: 'error', title: 'Error', text: 'Terjadi kesalahan server saat menghapus review.', confirmButtonColor: '#1a4331'});
         }
-      } catch (err) {
-        console.error(err);
-        alert("Terjadi kesalahan server saat menghapus review.");
       }
-    }
+    });
   };
 
   function renderAdminUsers() {
@@ -582,13 +654,8 @@ if (path.includes("users")) {
       const el = document.createElement("div");
       el.className = "admin-item";
       
-      // Pakai avatar default kelinci jika kosong
       const avatarSrc = u.avatar || `../img/team${(u.id % 4) + 1}.jpg`;
-
-      // Logika tombol Ban dan Delete
       const isBanned = u.banned ? true : false;
-      
-      // Karena kita sudah memfilter admin di awal, ini sebagai pelindung ekstra saja
       const actionButtons = u.role === "admin" 
         ? `<span style="color: gray; font-style: italic; font-size: 0.9rem;">Admin Account</span>`
         : `<button class="btn-edit" onclick="window.toggleBanUser(${u.id}, ${isBanned})">${isBanned ? 'Unban' : 'Ban'}</button>
@@ -651,7 +718,6 @@ if (path.includes("users")) {
     
     if (!totalUsers) return;
 
-    // Hitung status berdasarkan data yang sudah ada kolom banned-nya
     const banned = adminUsers.filter(u => u.banned).length; 
     const active = adminUsers.length - banned;
 
@@ -661,9 +727,7 @@ if (path.includes("users")) {
     if (activeUsers) activeUsers.innerText = active;
   }
 
-  // Panggil fungsi utama saat halaman diload
   fetchUsersAndReviews();
-
 }
 
 /* ===============================
@@ -676,14 +740,13 @@ if (path.includes("accommodations")) {
   const inputImage = document.getElementById("image");
 
   let penginapan = [];
+  let editId = null; 
   let imageBase64 = "";
 
-  // Sembunyikan preview gambar saat awal
   if (preview) {
     preview.style.display = "none";
   }
 
-  // Handle preview gambar
   if (inputImage) {
     inputImage.addEventListener("change", function () {
       const file = this.files[0];
@@ -701,7 +764,6 @@ if (path.includes("accommodations")) {
     });
   }
 
-  // Ambil data dari database
   async function fetchPenginapan() {
     try {
       const res = await fetch('http://localhost:3000/api/penginapan');
@@ -715,7 +777,6 @@ if (path.includes("accommodations")) {
     }
   }
 
-  // Render list penginapan ke layar
   function render() {
     if (!list) return;
     list.innerHTML = "";
@@ -730,7 +791,7 @@ if (path.includes("accommodations")) {
       div.className = "admin-item";
       
       const imgSrc = p.gambar || '../img/default-image.jpg';
-      const hargaFormat = Number(p.harga).toLocaleString('id-ID'); // Format ke Rupiah
+      const hargaFormat = Number(p.harga).toLocaleString('id-ID'); 
 
       div.innerHTML = `
         <img src="${imgSrc}" style="width:90px;height:70px;object-fit:cover;border-radius:8px;">
@@ -740,37 +801,79 @@ if (path.includes("accommodations")) {
           <div class="desc">${p.alamat}</div>
         </div>
         <div class="admin-actions">
+          <button class="btn-edit" data-id="${p.id}">Edit</button>
           <button class="btn-delete" data-id="${p.id}">Hapus</button>
         </div>
       `;
       list.appendChild(div);
     });
 
-    // Event tombol Hapus
     document.querySelectorAll(".btn-delete").forEach(btn => {
-      btn.addEventListener("click", async function () {
+      btn.addEventListener("click", function () {
         const id = this.dataset.id;
-        if (confirm("Yakin ingin menghapus penginapan ini?")) {
-          try {
-            const res = await fetch(`http://localhost:3000/api/penginapan/${id}`, { method: 'DELETE' });
-            const result = await res.json();
-            if (result.status === "success") {
-              fetchPenginapan(); // Refresh otomatis
-            } else {
-              alert("Gagal menghapus: " + result.message);
+        Swal.fire({
+          title: 'Hapus Penginapan?',
+          text: "Yakin ingin menghapus penginapan ini?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#e74c3c',
+          cancelButtonColor: '#1a4331',
+          confirmButtonText: 'Ya, Hapus!',
+          cancelButtonText: 'Batal'
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              const res = await fetch(`http://localhost:3000/api/penginapan/${id}`, { method: 'DELETE' });
+              const data = await res.json();
+              if (data.status === "success") {
+                Swal.fire({icon: 'success', title: 'Terhapus!', showConfirmButton: false, timer: 1500});
+                fetchPenginapan(); 
+              } else {
+                Swal.fire({icon: 'error', title: 'Gagal', text: data.message, confirmButtonColor: '#1a4331'});
+              }
+            } catch (error) {
+              console.error(error);
+              Swal.fire({icon: 'error', title: 'Error', text: 'Terjadi kesalahan server.', confirmButtonColor: '#1a4331'});
             }
-          } catch (error) {
-            console.error(error);
           }
+        });
+      });
+    });
+
+    document.querySelectorAll(".btn-edit").forEach(btn => {
+      btn.addEventListener("click", function () {
+        const id = this.dataset.id;
+        const data = penginapan.find(p => p.id == id); 
+
+        document.getElementById("nama").value = data.nama;
+        document.getElementById("lokasi").value = data.lokasi;
+        document.getElementById("alamat").value = data.alamat;
+        document.getElementById("harga").value = data.harga;
+
+        imageBase64 = data.gambar || data.image;
+        if (preview) {
+          preview.src = imageBase64;
+          preview.style.display = "block";
+          preview.style.width = "200px"; 
+          preview.style.marginTop = "10px";
+          preview.style.borderRadius = "8px";
         }
+
+        editId = id; 
+        
+        // MENGHAPUS REQUIRED SEMENTARA SAAT EDIT
+        if (inputImage) inputImage.removeAttribute("required");
+
+        const submitBtn = form.querySelector("button") || form.querySelector("input[type='submit']");
+        if(submitBtn) submitBtn.textContent = "Update Penginapan";
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
       });
     });
   }
 
-  // Panggil fungsi render saat halaman diload
   fetchPenginapan();
 
-  // Handle Form Submit
   if (form) {
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
@@ -780,16 +883,24 @@ if (path.includes("accommodations")) {
       const alamat = document.getElementById("alamat").value;
       const harga = document.getElementById("harga").value;
 
-      if (!imageBase64) {
-        alert("Harap upload gambar penginapan terlebih dahulu!");
+      if (!imageBase64 && editId === null) {
+        Swal.fire({icon: 'info', title: 'Upload Gambar', text: 'Harap upload gambar penginapan terlebih dahulu!', confirmButtonColor: '#1a4331'});
         return;
       }
 
       const data = { nama, lokasi, alamat, harga, image: imageBase64 };
 
       try {
-        const res = await fetch('http://localhost:3000/api/penginapan', {
-          method: 'POST',
+        let url = 'http://localhost:3000/api/penginapan';
+        let method = 'POST'; 
+
+        if (editId !== null) {
+          url = `http://localhost:3000/api/penginapan/${editId}`;
+          method = 'PUT';
+        }
+
+        const res = await fetch(url, {
+          method: method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
@@ -797,17 +908,26 @@ if (path.includes("accommodations")) {
         const result = await res.json();
 
         if (result.status === "success") {
-          alert(result.message);
+          Swal.fire({icon: 'success', title: 'Berhasil', text: result.message, showConfirmButton: false, timer: 1500});
+          
           form.reset();
           if (preview) preview.style.display = "none";
           imageBase64 = "";
-          fetchPenginapan(); // Refresh layar setelah simpan
+          editId = null;
+
+          // MENGEMBALIKAN REQUIRED SAAT FORM DI-RESET
+          if (inputImage) inputImage.setAttribute("required", "required");
+
+          const submitBtn = form.querySelector("button") || form.querySelector("input[type='submit']");
+          if(submitBtn) submitBtn.textContent = "Simpan";
+
+          fetchPenginapan(); 
         } else {
-          alert("Gagal menyimpan: " + result.message);
+          Swal.fire({icon: 'error', title: 'Gagal', text: result.message, confirmButtonColor: '#1a4331'});
         }
       } catch (error) {
         console.error(error);
-        alert("Terjadi kesalahan server saat menyimpan data.");
+        Swal.fire({icon: 'error', title: 'Error', text: 'Terjadi kesalahan server saat menyimpan data.', confirmButtonColor: '#1a4331'});
       }
     });
   }

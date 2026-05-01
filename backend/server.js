@@ -141,12 +141,39 @@ app.post('/api/wisata', async (req, res) => {
     }
 });
 
-// API Hapus Wisata (BARU DITAMBAHKAN)
-app.delete('/api/wisata/:id', async (req, res) => {
+// API Edit Wisata (BARU DITAMBAHKAN)
+app.put('/api/wisata/:id', async (req, res) => {
+    const { nama, lokasi, kategori, deskripsi, image } = req.body;
     try {
-        // Hapus data wisata berdasarkan ID
-        await pool.execute('DELETE FROM wisata WHERE id = ?', [req.params.id]);
-        res.json({ status: "success", message: "Data wisata berhasil dihapus secara permanen!" });
+        await pool.execute(
+            'UPDATE wisata SET nama=?, lokasi=?, kategori=?, deskripsi=?, gambar=? WHERE id=?',
+            [nama, lokasi, kategori, deskripsi, image, req.params.id]
+        );
+        res.json({ status: "success", message: "Data wisata berhasil diperbarui!" });
+    } catch (error) {
+        console.error("Error saat edit wisata:", error);
+        res.status(500).json({ status: "error", message: "Gagal memperbarui data wisata" });
+    }
+});
+
+
+// API Hapus Wisata (DIPERBARUI: Hapus Beruntun / Bersih Sampai ke Akar)
+app.delete('/api/wisata/:id', async (req, res) => {
+    const wisataId = req.params.id;
+    try {
+        // 1. Hapus semua riwayat perjalanan (trips) yang terkait dengan wisata ini
+        await pool.execute('DELETE FROM trips_history WHERE wisata_id = ?', [wisataId]);
+
+        // 2. Hapus semua data favorit (wishlist) yang terkait dengan wisata ini
+        await pool.execute('DELETE FROM favorites WHERE wisata_id = ?', [wisataId]);
+
+        // 3. Hapus semua ulasan (reviews) yang terkait dengan wisata ini
+        await pool.execute('DELETE FROM reviews WHERE wisata_id = ?', [wisataId]);
+
+        // 4. Setelah semua "anak" datanya bersih, barulah kita hapus data induk wisatanya
+        await pool.execute('DELETE FROM wisata WHERE id = ?', [wisataId]);
+
+        res.json({ status: "success", message: "Data wisata dan semua riwayat terkait berhasil dihapus bersih!" });
     } catch (error) {
         console.error("Error saat hapus wisata:", error);
         res.status(500).json({ status: "error", message: "Gagal menghapus data wisata karena kesalahan server" });

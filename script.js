@@ -109,7 +109,6 @@ async function loadDynamicLocations() {
     const result = await res.json();
 
     if (result.status === "success") {
-      // Sisakan opsi "All Locations"
       filterSelect.innerHTML = '<option value="semua">All Locations</option>';
       
       result.data.forEach(loc => {
@@ -119,7 +118,6 @@ async function loadDynamicLocations() {
         filterSelect.appendChild(option);
       });
       
-      // Kembalikan nilai yang sedang dipilih jika masih ada
       filterSelect.value = currentLocation;
     }
   } catch (error) {
@@ -132,7 +130,7 @@ async function loadDynamicLocations() {
 ========================================= */
 async function toggleFavorite(wisataId) {
   if (!getIsLoggedIn()) {
-    alert("Silakan login terlebih dahulu untuk menambahkan ke favorit!");
+    Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Silakan login terlebih dahulu untuk menambahkan ke favorit!', confirmButtonColor: '#1a4331' });
     return;
   }
 
@@ -150,10 +148,10 @@ async function toggleFavorite(wisataId) {
     if (result.status === "success") {
       if (result.action === "added") {
         favorites.push(wisataId);
-        alert(result.message);
+        Swal.fire({ icon: 'success', title: 'Berhasil', text: result.message, showConfirmButton: false, timer: 1500 });
       } else if (result.action === "removed") {
         favorites = favorites.filter(id => id !== wisataId);
-        alert(result.message);
+        Swal.fire({ icon: 'success', title: 'Terhapus', text: result.message, showConfirmButton: false, timer: 1500 });
       }
       
       renderFavoritesPage();
@@ -273,7 +271,7 @@ function renderCards(data) {
           <span>${Number(wisata.rating || 0).toFixed(1)}</span>
         </div>
         <p class="card-desc">${wisata.deskripsi}</p>
-        <a href="detail.html?id=${wisata.id}" class="card-btn">Lihat Detail</a>
+        <a href="detail.html?id=${wisata.id}" class="card-btn" style="text-decoration:none; display:inline-block; text-align:center;">Lihat Detail</a>
       </div>
     `;
 
@@ -327,58 +325,43 @@ async function loadDetailPage() {
 // ===== RENDER =====
 container.innerHTML = `
   <div class="detail-page">
-
     <img src="${imgSource}" class="detail-img">
-
     <div class="detail-content">
-
       <div class="detail-main">
 
         <!-- ================= LEFT ================= -->
         <div class="detail-left">
-
           <div class="detail-header">
             <h1>${wisata.nama}</h1>
-
             <div class="detail-actions">
             <button onclick="markAsVisited(${id})" class="btn-visited">
              <i class="fa-solid fa-location-check"></i> Pernah ke sini
              </button>
-
               <button id="favBtn" class="btn-fav">
                 <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
               </button>
             </div>
           </div>
-
           <p class="detail-location">
             <i class="fa-solid fa-location-dot"></i> ${wisata.lokasi}
           </p>
-
           <p class="detail-desc">
             ${wisata.deskripsi}
           </p>
-
           <div class="rating-box">
             ⭐ ${avg} (${reviewsData.length} reviews)
           </div>
-
           <div class="penginapan-section">
           <h2>Rekomendasi Penginapan</h2>
           <div id="penginapanList" class="hotel-list"></div>
           </div>
-
         </div>
-
 
         <!-- ================= RIGHT ================= -->
         <div class="detail-right">
-
           <div class="review-section">
             <h3>Ulasan Pengunjung</h3>
-
             <div id="reviewList"></div>
-
             <button id="viewMoreReviews" class="btn-view">
               View more
             </button>
@@ -386,36 +369,37 @@ container.innerHTML = `
 
           <div class="review-form">
             <h3>${existingReview ? 'Edit Review' : 'Write Review'}</h3>
-
-            <div id="starInput" class="star-input">
+            
+            <div id="starInput" class="star-input" style="font-size: 1.8rem; user-select: none;">
               ${[1,2,3,4,5].map(i => `
                 <span 
+                  onclick="window.setRating(${i})"
                   data-star="${i}" 
-                  class="star ${i <= currentReviewRating ? 'active' : ''}"
+                  class="star"
+                  style="color: ${existingReview && i <= existingReview.rating ? 'gold' : '#ccc'}; cursor: pointer; display: inline-block; transition: color 0.2s;"
                 >★</span>
               `).join("")}
             </div>
 
             <textarea id="reviewText" placeholder="Tulis pengalaman kamu...">${existingReview ? existingReview.komentar : ''}</textarea>
 
-            <button id="submitReview" class="btn-submit">
-              Submit Review
-            </button>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="submitReviewBtn" onclick="window.submitReview(${id})" class="btn-submit" style="flex: 1; cursor: pointer;">
+                  ${existingReview ? 'Update Review' : 'Submit Review'}
+                </button>
+                ${existingReview ? `<button type="button" onclick="window.deleteMyReview(${existingReview.id}, ${id})" class="btn-submit" style="background: #e74c3c; flex: 1; cursor: pointer;"><i class="fa-solid fa-trash"></i> Hapus</button>` : ''}
+            </div>
+            
           </div>
-
         </div>
-
       </div>
-
     </div>
   </div>
 `;
 
 // ===== EVENT =====
 document.getElementById("favBtn").onclick = () => toggleFavorite(id);
-
 renderReviewsUI(reviewsData, reviewLimit);
-setupReviewLogic(id);
 
 // ===== PENGINAPAN =====
 const penginapanContainer = document.getElementById("penginapanList");
@@ -427,16 +411,13 @@ try {
   if (dataP.status === "success") {
     penginapanContainer.innerHTML = dataP.data.map(p => `
       <div class="hotel-item">
-
         <img src="${p.gambar}" class="hotel-img">
-
         <div class="hotel-info">
           <strong>${p.nama}</strong>
           <p class="hotel-price">
             Rp ${Number(p.harga).toLocaleString('id-ID')}
           </p>
         </div>
-
       </div>
     `).join("");
   }
@@ -467,39 +448,48 @@ function renderReviewsUI(reviews, limit = 2) {
   `).join("");
 }
 
-function setupReviewLogic(wisataId) {
-  const stars = document.querySelectorAll("#starInput span");
-  const text = document.getElementById("reviewText");
-  const btn = document.getElementById("submitReview");
-  const viewMore = document.getElementById("viewMoreReviews");
+// ===============================================
+// FUNGSI GLOBAL REVIEW (Dengan SweetAlert2)
+// ===============================================
 
-  stars.forEach(s => {
-    s.onclick = () => {
-      currentReviewRating = parseInt(s.dataset.star);
-      stars.forEach(x => x.style.color = "gray");
-      for (let i = 0; i < currentReviewRating; i++) {
-        stars[i].style.color = "gold";
-      }
-    };
-  });
+window.setRating = function(rating) {
+    currentReviewRating = rating;
+    const stars = document.querySelectorAll("#starInput span");
+    stars.forEach((s, index) => {
+        s.style.color = index < rating ? "gold" : "#ccc";
+    });
+};
 
-  btn.onclick = async () => {
+window.submitReview = async function(wisataId) {
     if (!getIsLoggedIn()) {
-      alert("Kamu harus login dulu!");
-      return;
+        Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Kamu harus login dulu!', confirmButtonColor: '#1a4331' });
+        return;
     }
 
-    if (!currentReviewRating || !text.value) {
-      alert("Harap isi rating bintang dan teks ulasannya!");
-      return;
+    if (currentReviewRating === 0) {
+        Swal.fire({ icon: 'info', title: 'Tunggu Dulu', text: 'Silakan klik rating bintangnya dulu ya.', confirmButtonColor: '#1a4331' });
+        return;
+    }
+
+    const textInput = document.getElementById("reviewText");
+    if (!textInput || !textInput.value.trim()) {
+        Swal.fire({ icon: 'info', title: 'Tunggu Dulu', text: 'Teks ulasan tidak boleh kosong.', confirmButtonColor: '#1a4331' });
+        return;
     }
 
     const payload = {
       wisata_id: wisataId,
       user_id: getCurrentUser().id,
       rating: currentReviewRating,
-      komentar: text.value
+      komentar: textInput.value
     };
+
+    const btn = document.getElementById("submitReviewBtn");
+    const originalText = btn ? btn.innerText : "Submit";
+    if (btn) {
+        btn.innerText = "Mengirim...";
+        btn.disabled = true;
+    }
 
     try {
       const res = await fetch('http://localhost:3000/api/reviews', {
@@ -510,24 +500,68 @@ function setupReviewLogic(wisataId) {
       const result = await res.json();
 
       if (result.status === "success") {
-        alert(result.message);
-        openModal(wisataId); 
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: result.message,
+            confirmButtonColor: '#1a4331'
+        }).then(() => {
+            if (window.location.pathname.includes("detail.html")) {
+                window.location.reload(); 
+            } else {
+                openModal(wisataId);
+            }
+        });
       } else {
-        alert("Gagal mengirim ulasan.");
+        Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal mengirim ulasan.', confirmButtonColor: '#1a4331' });
+        if (btn) { btn.innerText = originalText; btn.disabled = false; }
       }
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan server saat menyimpan ulasan.");
+      Swal.fire({ icon: 'error', title: 'Error Server', text: 'Terjadi kesalahan sistem saat menyimpan ulasan.', confirmButtonColor: '#1a4331' });
+      if (btn) { btn.innerText = originalText; btn.disabled = false; }
     }
-  };
+};
 
-  if (viewMore) {
-    viewMore.onclick = () => {
-      reviewLimit += 5;
-      openModal(wisataId); 
-    };
-  }
-}
+window.deleteMyReview = function(reviewId, wisataId) {
+    Swal.fire({
+        title: 'Hapus Ulasan?',
+        text: "Ulasan yang dihapus tidak bisa dikembalikan lagi.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c', 
+        cancelButtonColor: '#1a4331',  
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const res = await fetch(`http://localhost:3000/api/admin/reviews/${reviewId}`, { method: 'DELETE' });
+                const data = await res.json();
+                
+                if (data.status === "success") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Terhapus!',
+                        text: 'Ulasan berhasil dihapus.',
+                        confirmButtonColor: '#1a4331'
+                    }).then(() => {
+                        if (window.location.pathname.includes("detail.html")) {
+                            window.location.reload(); 
+                        } else {
+                            openModal(wisataId); 
+                        }
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message, confirmButtonColor: '#1a4331' });
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan server.', confirmButtonColor: '#1a4331' });
+            }
+        }
+    });
+};
 
 function closeModal() {
   const overlay = document.getElementById("modalOverlay");
@@ -537,16 +571,23 @@ function closeModal() {
   }
 }
 
-// Fungsi baru untuk konfirmasi sebelum hapus
 function confirmDeleteFavorite(wisataId) {
-    // Menampilkan dialog konfirmasi bawaan browser
-    const yakin = confirm("Apakah Anda yakin ingin menghapus destinasi ini dari daftar favorit?");
-    
-    if (yakin) {
-        // Jika klik 'OK', jalankan fungsi toggleFavorite yang sudah ada
-        toggleFavorite(wisataId);
-    }
+    Swal.fire({
+        title: 'Hapus dari Favorit?',
+        text: "Destinasi ini akan dihapus dari daftar favoritmu.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c', 
+        cancelButtonColor: '#1a4331',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            toggleFavorite(wisataId);
+        }
+    });
 }
+
 /* =========================================
    INITIALIZATION (FETCH DATA SAAT LOAD)
 ========================================= */
@@ -555,17 +596,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   initialized = true;
 
   try {
-    // 1. Ambil data wisata dari API Node.js
     const resWisata = await fetch('http://localhost:3000/api/wisata');
     const resultWisata = await resWisata.json();
     if (resultWisata.status === "success") {
       dataWisata = resultWisata.data;
     }
 
-    // 2. Ambil lokasi dinamis (TAMBAHAN BARU)
     await loadDynamicLocations();
 
-    // 3. Jika user login, ambil data daftar ID favorit miliknya
     const user = getCurrentUser();
     if (user) {
       const resFav = await fetch(`http://localhost:3000/api/favorites/${user.id}`);
@@ -671,8 +709,6 @@ const observer = new IntersectionObserver(entries => {
 }, { threshold: 0.2 });
 
 document.querySelectorAll(".blog-card").forEach(card => {
-  // Hanya tambah class jika belum punya class fade-in
-  // (mencegah error pada halaman yang tidak pakai animasi ini)
   if(!card.classList.contains("fade-in")) {
      card.classList.add("fade-in");
   }
@@ -692,7 +728,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const featuredContainer = document.getElementById("featuredContainer");
     const listContainer = document.getElementById("listContainer");
 
-    // Hanya jalankan script ini jika berada di halaman Blogs
     if (featuredContainer && listContainer) {
         loadPublicBlogs();
     }
@@ -710,7 +745,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 
-                // 1. Render Featured Blog (Ambil data indeks ke-0 / Paling baru)
                 const featured = blogs[0];
                 const featuredContent = featured.content ? featured.content.substring(0, 150) + "..." : "";
                 
@@ -726,19 +760,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 `;
 
-                // 2. Render Blog List (Ambil data sisanya: indeks ke-1 sampai habis)
                 listContainer.innerHTML = "";
                 const restBlogs = blogs.slice(1);
                 
                 restBlogs.forEach(b => {
                     const shortContent = b.content ? b.content.substring(0, 80) + "..." : "";
-                    
-                    // Format tanggal sederhana, pakai kategori jika tanggal tidak terbaca
                     const dateStr = b.created_at 
                         ? new Date(b.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) 
                         : b.category;
 
-                    // PERBAIKAN: Hapus class "fade-in" di baris bawah ini
                     listContainer.innerHTML += `
                         <div class="blog-card"> 
                             <img src="${b.image || 'img/default-image.jpg'}">
@@ -758,13 +788,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 });
+
 /* =========================================
    TRIPS / RIWAYAT PERJALANAN (CHECK-IN)
 ========================================= */
 async function markAsVisited(wisataId) {
   if (!getIsLoggedIn()) {
-    alert("Silakan login terlebih dahulu!");
-    window.location.href = "../login.html"; // Sesuaikan jika path login berbeda
+    Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Silakan login terlebih dahulu!', confirmButtonColor: '#1a4331' }).then(() => {
+        window.location.href = "../login.html"; 
+    });
     return;
   }
 
@@ -777,12 +809,13 @@ async function markAsVisited(wisataId) {
       body: JSON.stringify({ user_id: user.id, wisata_id: wisataId })
     });
     const result = await response.json();
-    alert(result.message); // Munculkan notifikasi sukses/sudah pernah
+    Swal.fire({ icon: 'success', title: 'Jejak Tercatat', text: result.message, confirmButtonColor: '#1a4331' });
   } catch (error) {
     console.error("Gagal menyimpan trip:", error);
-    alert("Terjadi kesalahan server saat menyimpan jejak perjalanan.");
+    Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan server saat menyimpan jejak perjalanan.', confirmButtonColor: '#1a4331' });
   }
 }
+
 /* =========================================
    TAMPILKAN DATA DI HALAMAN TRIPS
 ========================================= */
@@ -830,17 +863,14 @@ async function loadUserTrips() {
         const card = document.createElement("div");
         card.className = "wisata-card show";
         
-        // 1. Gambar utama tetap menggunakan gambar dari database wisata
         const imgSource = trip.gambar || trip.image || '../img/default-image.jpg';
         const date = new Date(trip.tanggal_kunjungan).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
-        // 2. Olah data galeri foto bukti
         let galeriHtml = "";
         if (trip.bukti_foto) {
             let photos = [];
             try { photos = JSON.parse(trip.bukti_foto); } catch(e) { photos = [trip.bukti_foto]; }
             
-            // Buat HTML untuk deretan foto + TOMBOL HAPUS DI ATAS FOTO
             photos.forEach((p, index) => {
                 galeriHtml += `
                 <div style="position: relative; display: inline-block; margin-right: 10px; margin-bottom: 10px;">
@@ -854,7 +884,6 @@ async function loadUserTrips() {
                 </div>`;
             });
         }
-        // 3. Render Kartu
         card.innerHTML = `
           <div class="card-img-wrap">
             <img src="${imgSource}" class="card-img" alt="${trip.nama}" style="height: 200px; object-fit: cover;">
@@ -892,7 +921,6 @@ async function loadUserTrips() {
   }
 }
 
-// Fungsi untuk menangani proses upload foto dari tombol di atas
 window.uploadFotoBukti = function(tripId) {
     const input = document.getElementById(`upload-${tripId}`);
     const file = input.files[0];
@@ -900,7 +928,7 @@ window.uploadFotoBukti = function(tripId) {
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-        alert("Ukuran foto maksimal 2MB!");
+        Swal.fire({ icon: 'warning', title: 'File Terlalu Besar', text: 'Ukuran foto maksimal 2MB!', confirmButtonColor: '#1a4331' });
         return;
     }
 
@@ -917,61 +945,73 @@ window.uploadFotoBukti = function(tripId) {
             const result = await response.json();
             
             if (result.status === "success") {
-                alert("Foto kenangan berhasil ditambahkan!");
-                loadUserTrips(); // Otomatis me-refresh kartu agar foto baru langsung muncul
+                Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Foto kenangan berhasil ditambahkan!', showConfirmButton: false, timer: 1500 });
+                loadUserTrips(); 
             } else {
-                alert(result.message);
+                Swal.fire({ icon: 'error', title: 'Gagal', text: result.message, confirmButtonColor: '#1a4331' });
             }
         } catch(error) {
             console.error(error);
-            alert("Gagal mengunggah foto.");
+            Swal.fire({ icon: 'error', title: 'Error Server', text: 'Gagal mengunggah foto.', confirmButtonColor: '#1a4331' });
         }
     };
     reader.readAsDataURL(file);
 };
-// Fungsi untuk menghapus foto dari galeri
-window.deleteFotoBukti = async function(tripId, index) {
-    // Munculkan peringatan sebelum menghapus
-    if (!confirm("Apakah kamu yakin ingin menghapus foto kenangan ini?")) return;
 
-    try {
-        const response = await fetch(`http://localhost:3000/api/trips/${tripId}/photo`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ photoIndex: index })
-        });
-        const result = await response.json();
-        
-        if (result.status === "success") {
-            loadUserTrips(); // Langsung refresh galeri tanpa perlu reload halaman
-        } else {
-            alert(result.message);
+window.deleteFotoBukti = function(tripId, index) {
+    Swal.fire({
+        title: 'Hapus Foto Kenangan?',
+        text: "Foto yang dihapus tidak bisa dikembalikan.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#1a4331',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`http://localhost:3000/api/trips/${tripId}/photo`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ photoIndex: index })
+                });
+                const data = await response.json();
+                
+                if (data.status === "success") {
+                    Swal.fire({ icon: 'success', title: 'Terhapus!', text: 'Foto berhasil dihapus.', showConfirmButton: false, timer: 1500 });
+                    loadUserTrips(); 
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message, confirmButtonColor: '#1a4331' });
+                }
+            } catch(error) {
+                console.error("Gagal menghapus foto:", error);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan saat menghubungi server.', confirmButtonColor: '#1a4331' });
+            }
         }
-    } catch(error) {
-        console.error("Gagal menghapus foto:", error);
-        alert("Terjadi kesalahan saat menghubungi server.");
-    }
+    });
 };
-// Fungsi untuk membuka preview gambar full
+
 window.openImagePreview = function(src) {
     const modal = document.getElementById("imagePreviewModal");
     const fullImg = document.getElementById("fullImage");
     
     fullImg.src = src;
-    modal.classList.add("open"); // Memanfaatkan class .open yang sudah ada di CSS kamu
-    document.body.style.overflow = "hidden"; // Biar gak bisa scroll saat liat foto
+    modal.classList.add("open"); 
+    document.body.style.overflow = "hidden"; 
 };
 
-// Fungsi untuk menutup preview
 window.closeImagePreview = function() {
     const modal = document.getElementById("imagePreviewModal");
     modal.classList.remove("open");
-    document.body.style.overflow = ""; // Balikin scroll
+    document.body.style.overflow = ""; 
 };
 
-// Tambahan: Tutup modal kalau user klik area di luar gambar
-document.getElementById("imagePreviewModal").onclick = function(e) {
-    if (e.target.id === "imagePreviewModal") {
-        closeImagePreview();
-    }
-};
+const imagePreviewModal = document.getElementById("imagePreviewModal");
+if (imagePreviewModal) {
+    imagePreviewModal.onclick = function(e) {
+        if (e.target.id === "imagePreviewModal") {
+            closeImagePreview();
+        }
+    };
+}

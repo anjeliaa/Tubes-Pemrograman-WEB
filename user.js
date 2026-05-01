@@ -139,10 +139,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.onclick = () => navUser.classList.remove("active");
   }
 
+  // PERBAIKAN: Gunakan penanganan langsung untuk logoutBtn dengan SweetAlert2
   if (logoutBtn) {
-    logoutBtn.onclick = () => {
-      localStorage.removeItem("currentUser");
-      window.location.href = "/login.html";
+    logoutBtn.onclick = (e) => {
+      e.preventDefault();
+      Swal.fire({
+        title: 'Yakin ingin keluar?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#1a4331',
+        confirmButtonText: 'Ya, Keluar!',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          localStorage.removeItem("currentUser");
+          window.location.href = "../login.html"; // Redirect ke halaman login yang benar
+        }
+      });
     };
   }
 
@@ -196,7 +210,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
           reader.readAsDataURL(file);
         } else {
-          alert("File terlalu besar (Maks 2MB)");
+          // PERBAIKAN: Alert jika file terlalu besar
+          Swal.fire({
+            icon: 'error',
+            title: 'File Terlalu Besar',
+            text: 'Ukuran foto maksimal adalah 2MB.',
+            confirmButtonColor: '#1a4331'
+          });
         }
       };
     }
@@ -224,11 +244,25 @@ document.addEventListener("DOMContentLoaded", async () => {
           const result = await res.json();
           if (result.status === "success") {
             localStorage.setItem("currentUser", JSON.stringify(result.user));
-            alert("Profil diperbarui!");
-            window.location.href = "/user/dashboard.html";
+            // PERBAIKAN: Alert sukses update profil
+            Swal.fire({
+              icon: 'success',
+              title: 'Berhasil!',
+              text: 'Profil berhasil diperbarui.',
+              showConfirmButton: false,
+              timer: 1500
+            }).then(() => {
+              window.location.href = "../user/dashboard.html";
+            });
           }
         } catch (err) {
-          alert("Gagal menyimpan ke server.");
+          // PERBAIKAN: Alert jika gagal menyimpan
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Gagal menyimpan ke server.',
+            confirmButtonColor: '#1a4331'
+          });
         }
       };
     }

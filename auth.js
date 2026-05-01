@@ -21,15 +21,34 @@ document.getElementById("registerForm")?.addEventListener("submit", async (e) =>
     const result = await response.json();
 
     if (result.status === "success") {
-      alert("Register berhasil! Silakan login.");
-      window.location.href = "login.html";
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: 'Register berhasil! Silakan login.',
+        confirmButtonColor: '#1a4331',
+        heightAuto: false // Mencegah background hancur
+      }).then(() => {
+        window.location.href = "login.html";
+      });
     } else {
       // Menampilkan pesan error dari backend (misal: Email sudah terdaftar)
-      alert(result.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal Mendaftar',
+        text: result.message,
+        confirmButtonColor: '#1a4331',
+        heightAuto: false // Mencegah background hancur
+      });
     }
   } catch (error) {
     console.error("Error:", error);
-    alert("Terjadi kesalahan koneksi ke server saat mendaftar.");
+    Swal.fire({
+      icon: 'error',
+      title: 'Error Koneksi',
+      text: 'Terjadi kesalahan koneksi ke server saat mendaftar.',
+      confirmButtonColor: '#1a4331',
+      heightAuto: false // Mencegah background hancur
+    });
   }
 });
 
@@ -55,19 +74,40 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
       // Simpan session user yang sedang login ke localStorage
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
 
-      // Redirect berdasarkan role yang didapat dari database
-      if (currentUser.role === "admin") {
-        window.location.href = "admin/dashboard.html";
-      } else {
-        window.location.href = "user/dashboard.html";
-      }
+      Swal.fire({
+        icon: 'success',
+        title: 'Login Berhasil',
+        text: `Selamat datang kembali, ${currentUser.name}!`,
+        showConfirmButton: false,
+        timer: 1500,
+        heightAuto: false // Mencegah background hancur
+      }).then(() => {
+        // Redirect berdasarkan role yang didapat dari database
+        if (currentUser.role === "admin") {
+          window.location.href = "admin/dashboard.html";
+        } else {
+          window.location.href = "user/dashboard.html";
+        }
+      });
     } else {
       // Menampilkan pesan error (misal: Password salah / Email tidak ditemukan)
-      alert(result.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Login Gagal',
+        text: result.message,
+        confirmButtonColor: '#1a4331',
+        heightAuto: false // Mencegah background hancur
+      });
     }
   } catch (error) {
     console.error("Error:", error);
-    alert("Terjadi kesalahan koneksi ke server saat login.");
+    Swal.fire({
+      icon: 'error',
+      title: 'Error Koneksi',
+      text: 'Terjadi kesalahan koneksi ke server saat login.',
+      confirmButtonColor: '#1a4331',
+      heightAuto: false // Mencegah background hancur
+    });
   }
 });
 
