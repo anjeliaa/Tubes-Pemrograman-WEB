@@ -732,6 +732,40 @@ document.addEventListener("DOMContentLoaded", () => {
         loadPublicBlogs();
     }
 
+    // PERBAIKAN: Fungsi untuk mengecek login saat Read More di-klik
+    window.checkBlogAuth = function(blogId) {
+      if (!getIsLoggedIn()) {
+        Swal.fire({
+          icon: 'info',
+          title: 'Akses Dibatasi',
+          text: 'Kamu harus login terlebih dahulu untuk membaca artikel secara lengkap.',
+          confirmButtonColor: '#1a4331',
+          confirmButtonText: 'Login Sekarang',
+          showCancelButton: true,
+          cancelButtonText: 'Nanti Saja'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = "login.html"; // Arahkan ke halaman login
+          }
+        });
+      } else {
+        // Jika sudah login, cek rolenya.
+        const user = getCurrentUser();
+        if(user.role === "admin") {
+            // Karena ini halaman public (index/blogs public), kalau yang login admin arahkan ke dashboard admin
+            Swal.fire({
+                icon: 'warning',
+                title: 'Akses Admin',
+                text: 'Kamu login sebagai Admin. Fitur baca blog hanya untuk User.',
+                confirmButtonColor: '#1a4331'
+            });
+        } else {
+           // Jika user biasa, arahkan ke detail blog khusus user
+           window.location.href = `user/blog-detail.html?id=${blogId}`;
+        }
+      }
+    };
+
     async function loadPublicBlogs() {
         try {
             const res = await fetch('http://localhost:3000/api/blogs');
@@ -755,7 +789,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="blog-tag">${featured.category || 'Featured'}</span>
                             <h2>${featured.title}</h2>
                             <p>${featuredContent}</p>
-                            <a href="blog-detail.html?id=${featured.id}"><button class="btn-read">Read More</button></a>
+                            <!-- PERBAIKAN: Panggil fungsi checkBlogAuth -->
+                            <button class="btn-read" onclick="checkBlogAuth(${featured.id})">Read More</button>
                         </div>
                     </div>
                 `;
@@ -776,7 +811,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <span class="blog-date" style="text-transform: capitalize;">${dateStr}</span>
                                 <h3>${b.title}</h3>
                                 <p>${shortContent}</p>
-                                <a href="blog-detail.html?id=${b.id}" class="read-more">Read More →</a>
+                                <!-- PERBAIKAN: Gunakan <a> dengan onclick, cegah navigasi default -->
+                                <a href="#" onclick="event.preventDefault(); checkBlogAuth(${b.id})" class="read-more">Read More →</a>
                             </div>
                         </div>
                     `;
