@@ -356,7 +356,10 @@ app.get('/api/admin/stats', async (req, res) => {
     try {
         // Hitung semua baris dari masing-masing tabel
         const [wisataResult] = await pool.execute('SELECT COUNT(*) as total FROM wisata');
-        const [userResult] = await pool.execute('SELECT COUNT(*) as total FROM users');
+        
+        // PERBAIKAN: Hanya hitung akun yang role-nya bukan admin
+        const [userResult] = await pool.execute('SELECT COUNT(*) as total FROM users WHERE role = "user"');
+        
         const [blogResult] = await pool.execute('SELECT COUNT(*) as total FROM blogs');
         const [reviewResult] = await pool.execute('SELECT COUNT(*) as total FROM reviews');
 
