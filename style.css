@@ -536,7 +536,7 @@ textarea {
 /* DESTINATION PREVIEW */
 .destination-preview {
   padding: 90px 0;
-  background: var(--white);
+  background: var(--forest);
 }
 
 .preview-header {
@@ -549,11 +549,11 @@ textarea {
 .preview-header h2 {
   font-family: 'Playfair Display', serif;
   font-size: 1.9rem;
-  color: var(--forest);
+  color: var(--white);
 }
 .preview-sub {
   font-size: .9rem;
-  color: var(--text-soft);
+  color: var(--white);
   margin-top: 4px;
 }
 
@@ -564,7 +564,7 @@ textarea {
   transition: .25s;
 }
 .see-all:hover {
-  color: var(--forest);
+  color: var(--white);
   transform: translateX(4px);
 }
 
@@ -1608,6 +1608,7 @@ textarea {
 /* ================= BLOG LIST ================= */
 .blog-list {
   padding: 60px 0;
+  background-color: var(--forest);
 }
 
 .blog-card {
@@ -1758,10 +1759,10 @@ textarea {
 
 .about-purpose {
   padding: 90px 0;
-  background: var(--grid);
+  background: var(--forest);
   text-align: center;
 }
-.about-purpose h2 { font-family: 'Playfair Display', serif; }
+.about-purpose h2 { font-family: 'Playfair Display', serif; color: white;}
 
 .purpose-grid {
   display: grid;
@@ -1874,7 +1875,7 @@ textarea {
   display: flex;
   gap: 15px;
   align-items: center;
-  background: var(--grid);
+  background: var(--forest);
   padding: 15px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
@@ -1889,8 +1890,9 @@ textarea {
   border-radius: 50%;
   object-fit: cover;
 }
-.person-card h4 { margin: 0; }
-.person-card small { color: var(--text-soft); }
+.person-card h4 { margin: 0; color: var(--white);}
+.person-card small { color: var(--white); }
+.person-card p {color: var(--white);}
 
 /* DASHBOARD */
 .dash-hero {
@@ -1939,7 +1941,7 @@ textarea {
   color: var(--forest);
 }
 
-.dash-section { padding: 60px 0; }
+.dash-section { padding: 60px 0; background-color: var(--white);}
 
 .rekom-grid {
   display: grid;
@@ -1947,7 +1949,7 @@ textarea {
   gap: 20px;
 }
 .rekom-card {
-  background: var(--grid);
+  background: var(--mint);
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: var(--shadow-sm);

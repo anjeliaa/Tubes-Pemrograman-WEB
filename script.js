@@ -17,21 +17,24 @@ const heroData = {
     desc: "Explore mountains, waterfalls, and cool highland scenery in Rejang Lebong.",
     image: "../img/curug trisakti curup.jpg"
   },
-  "Kabupaten Lebong": {
-    title: "Hidden Nature of Lebong",
+  "Bengkulu Utara": {
+    title: "Hidden Nature of Bengkulu Utara",
     desc: "A quiet paradise filled with natural landscapes and green valleys.",
     image: "../img/pusat pelatihan gajah.jpg"
   },
-  "Pulau Enggano, Bengkulu Utara": {
+  "Pulau Enggano": {
     title: "Enggano Island Paradise",
     desc: "Remote tropical island with pristine beaches and untouched coral reefs.",
-    image: "../img/pantai batu lubang.jpg"
-  }
+    image: "../img/Pantai Kaana.jpg"
+  },
+  "Kaur": {
+    title: "Explore Kaur's Hidden Gems",
+    desc: "A perfect destination featuring beautiful beaches, refreshing waterfalls, and serene coastal views ideal for relaxing and adventure.",
+    image: "../img/pantai linau.jpg"
+}
 };
 
-/* =========================================
-   AUTH STATE HELPERS
-========================================= */
+/* AUTH STATE HELPERS */
 function getIsLoggedIn() {
   return localStorage.getItem("currentUser") !== null;
 }
@@ -50,9 +53,7 @@ let currentLocation = "semua";
 let initialized = false;
 let currentOpenId = null;
 
-/* =========================================
-   UI HELPERS
-========================================= */
+/* UI HELPERS */
 function updateHero() {
   const hero = heroData[currentLocation] || heroData.semua;
 
@@ -125,9 +126,7 @@ async function loadDynamicLocations() {
   }
 }
 
-/* =========================================
-   FAVORITE SYSTEM (DATABASE)
-========================================= */
+/* FAVORITE SYSTEM */
 async function toggleFavorite(wisataId) {
   if (!getIsLoggedIn()) {
     Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Silakan login terlebih dahulu untuk menambahkan ke favorit!', confirmButtonColor: '#1a4331' });
@@ -212,9 +211,7 @@ function renderFavoritesPage() {
   });
 }
 
-/* =========================================
-   FILTER & RENDER CARD
-========================================= */
+/* FILTER & RENDER CARD */
 function filterData() {
   return dataWisata.filter(w => {
     const matchLocation = currentLocation === "semua" || w.lokasi === currentLocation;
@@ -271,7 +268,7 @@ function renderCards(data) {
           <span>${Number(wisata.rating || 0).toFixed(1)}</span>
         </div>
         <p class="card-desc">${wisata.deskripsi}</p>
-        <a href="detail.html?id=${wisata.id}" class="card-btn" style="text-decoration:none; display:inline-block; text-align:center;">Lihat Detail</a>
+        <a href="detail.html?id=${wisata.id}" class="card-btn" style="text-decoration:none; display:inline-block; text-align:center;" onclick="event.preventDefault(); checkDetailAuth(${wisata.id})"> Lihat Detail </a>
       </div>
     `;
 
@@ -279,9 +276,7 @@ function renderCards(data) {
   });
 }
 
-/* =========================================
-   Detail wisata
-========================================= */
+/* Detail wisata */
 async function loadDetailPage() {
   if (!window.location.pathname.includes("detail.html")) return;
 
@@ -303,7 +298,7 @@ async function loadDetailPage() {
 
     const container = document.getElementById("detailContainer");
 
-    // ===== FETCH REVIEWS =====
+    //  FETCH REVIEWS 
     let reviewsData = [];
     try {
       const resRev = await fetch(`http://localhost:3000/api/reviews/${id}`);
@@ -322,7 +317,7 @@ async function loadDetailPage() {
 
     const imgSource = wisata.gambar || wisata.image;
 
-// ===== RENDER =====
+//  RENDER 
 container.innerHTML = `
   <div class="detail-page">
     <img src="${imgSource}" class="detail-img">
@@ -397,11 +392,11 @@ container.innerHTML = `
   </div>
 `;
 
-// ===== EVENT =====
+//  EVENT 
 document.getElementById("favBtn").onclick = () => toggleFavorite(id);
 renderReviewsUI(reviewsData, reviewLimit);
 
-// ===== PENGINAPAN =====
+//  PENGINAPAN 
 const penginapanContainer = document.getElementById("penginapanList");
 
 try {
@@ -437,20 +432,51 @@ function renderReviewsUI(reviews, limit = 2) {
     return;
   }
 
-  list.innerHTML = reviews.slice(0, limit).map(r => `
-    <div class="review-item">
-      <div style="display: flex; justify-content: space-between;">
-        <div class="review-user"><strong>${r.user_name}</strong></div>
+  list.innerHTML = reviews.slice(0, limit).map(r => {
+
+    const initial = r.user_name ? r.user_name.charAt(0).toUpperCase() : "U";
+
+    return `
+      <div class="review-item">
+
+        <div style="display:flex; align-items:center; gap:10px;">
+
+          ${
+            r.avatar 
+            ? `<img src="${r.avatar}" 
+                    style="width:40px; height:40px; border-radius:50%; object-fit:cover;">`
+            : `<div style="
+                width:40px;
+                height:40px;
+                border-radius:50%;
+                background:#1a4331;
+                color:white;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-weight:bold;
+              ">
+                ${initial}
+              </div>`
+          }
+
+          <div>
+            <div class="review-user"><strong>${r.user_name}</strong></div>
+            <div class="stars">${generateStars(r.rating)}</div>
+          </div>
+
+        </div>
+
+        <div class="review-text" style="margin-top:8px;">
+          ${r.komentar}
+        </div>
+
       </div>
-      <div class="stars">${generateStars(r.rating)}</div>
-      <div class="review-text">${r.komentar}</div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
-// ===============================================
 // FUNGSI GLOBAL REVIEW (Dengan SweetAlert2)
-// ===============================================
 
 window.setRating = function(rating) {
     currentReviewRating = rating;
@@ -563,13 +589,6 @@ window.deleteMyReview = function(reviewId, wisataId) {
     });
 };
 
-function closeModal() {
-  const overlay = document.getElementById("modalOverlay");
-  if(overlay) {
-    overlay.classList.remove("open");
-    document.body.style.overflow = "";
-  }
-}
 
 function confirmDeleteFavorite(wisataId) {
     Swal.fire({
@@ -588,9 +607,7 @@ function confirmDeleteFavorite(wisataId) {
     });
 }
 
-/* =========================================
-   INITIALIZATION (FETCH DATA SAAT LOAD)
-========================================= */
+/* INITIALIZATION (FETCH DATA SAAT LOAD) */
 document.addEventListener("DOMContentLoaded", async () => {
   if (initialized) return;
   initialized = true;
@@ -682,9 +699,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadDetailPage();
 });
 
-/* =========================================
-   LAIN-LAIN (BLOG SEARCH & ANIMATIONS)
-========================================= */
+/* LAIN-LAIN (BLOG SEARCH & ANIMATIONS) */
 const blogSearch = document.getElementById("blogSearch");
 blogSearch?.addEventListener("input", function () {
   const keyword = this.value.toLowerCase();
@@ -825,9 +840,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-/* =========================================
-   TRIPS / RIWAYAT PERJALANAN (CHECK-IN)
-========================================= */
+window.checkDetailAuth = function(wisataId) {
+      if (!getIsLoggedIn()) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Akses Dibatasi',
+          text: 'Kamu harus login dulu untuk melihat detail destinasi.',
+          confirmButtonColor: '#1a4331',
+          confirmButtonText: 'Login',
+          showCancelButton: true,
+          cancelButtonText: 'Nanti'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = "login.html";
+          }
+        });
+      } else {
+        window.location.href = `detail.html?id=${wisataId}`;
+      }
+    };
+
+/* TRIPS / RIWAYAT PERJALANAN (CHECK-IN) */
 async function markAsVisited(wisataId) {
   if (!getIsLoggedIn()) {
     Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Silakan login terlebih dahulu!', confirmButtonColor: '#1a4331' }).then(() => {
@@ -852,9 +885,7 @@ async function markAsVisited(wisataId) {
   }
 }
 
-/* =========================================
-   TAMPILKAN DATA DI HALAMAN TRIPS
-========================================= */
+/* TAMPILKAN DATA DI HALAMAN TRIPS */
 document.addEventListener("DOMContentLoaded", () => {
   if (window.location.pathname.includes("trips.html")) {
     loadUserTrips();
