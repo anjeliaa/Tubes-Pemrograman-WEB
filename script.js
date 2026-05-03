@@ -859,6 +859,16 @@ window.checkDetailAuth = function(wisataId) {
         window.location.href = `detail.html?id=${wisataId}`;
       }
     };
+    
+    function showPopup() {
+      setTimeout(() => {
+        document.getElementById("successPopup").classList.add("show");
+      }, 500);
+    }
+    
+    function closePopup() {
+      document.getElementById("successPopup").classList.remove("show");
+    }
 
 /* TRIPS / RIWAYAT PERJALANAN (CHECK-IN) */
 async function markAsVisited(wisataId) {
@@ -1081,4 +1091,15 @@ if (imagePreviewModal) {
             closeImagePreview();
         }
     };
+}
+
+//hamburger//
+const hamburger = document.getElementById("hamburger");
+const navMenu = document.getElementById("navMenu");
+
+if (hamburger && navMenu) {
+    hamburger.addEventListener("click", () => {
+        navMenu.classList.toggle("active");
+        hamburger.classList.toggle("active");
+    });
 }

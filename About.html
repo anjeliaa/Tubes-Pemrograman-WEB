@@ -11,7 +11,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-    
+    <div class="success-popup" id="successPopup">
+        <div class="popup-box">
+            <h3>Message Sent Successfully</h3>
+            <p>Thank you for contacting Jejak Bencoolen.</p>
+            <button onclick="closePopup()">Close</button>
+        </div>
+    </div>
     <nav class="navbar" id="navbar">
         <div class="nav-container">
             <a href="#" class="nav-logo">
@@ -108,14 +114,22 @@
                 </div>
             </div>
             <div class="contact-bottom">
-                <div class="contact-form">
-                    <span>LEAVE A MESSAGE</span>
-                    <h2>We love to hear from you</h2>
-                    <input type="text" placeholder="Your Name">
-                    <input type="email" placeholder="E-mail">
-                    <textarea placeholder="Message"></textarea>
-                    <button class="btn-submit">Send Message</button>
-                </div>
+                <form class="contact-form"
+                action="https://formsubmit.co/anjeliafebiliyanti@gmail.com" 
+                method="POST"
+                target="hidden_iframe"
+                onsubmit="showPopup()">
+                <span>LEAVE A MESSAGE</span>
+                <h2>We love to hear from you</h2>
+                <input type="text" name="name" placeholder="Nama Kamu" required>
+                <input type="email" name="email" placeholder="E-mail" required>
+                <textarea name="message" placeholder="Tulis Pesan" required></textarea>
+                <input type="hidden" name="_captcha" value="false">
+                <button type="submit" class="btn-submit">Kirim</button>
+            </form>
+            <iframe 
+            name="hidden_iframe" 
+            style="display:none;"></iframe>
                 <div class="contact-person">
                     <div class="person-card">
                         <img src="img/team1.jpg" alt="">
