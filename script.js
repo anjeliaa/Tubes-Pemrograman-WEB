@@ -843,7 +843,7 @@ document.addEventListener("DOMContentLoaded", () => {
 window.checkDetailAuth = function(wisataId) {
       if (!getIsLoggedIn()) {
         Swal.fire({
-          icon: 'warning',
+          icon: 'info',
           title: 'Akses Dibatasi',
           text: 'Kamu harus login dulu untuk melihat detail destinasi.',
           confirmButtonColor: '#1a4331',
@@ -856,7 +856,7 @@ window.checkDetailAuth = function(wisataId) {
           }
         });
       } else {
-        window.location.href = `detail.html?id=${wisataId}`;
+        window.location.href = `user/detail.html?id=${wisataId}`;
       }
     };
 
