@@ -856,7 +856,7 @@ window.checkDetailAuth = function(wisataId) {
           }
         });
       } else {
-        window.location.href = `user/detail.html?id=${wisataId}`;
+        window.location.href = `detail.html?id=${wisataId}`;
       }
     };
 
